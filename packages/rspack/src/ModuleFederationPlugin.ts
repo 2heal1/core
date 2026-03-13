@@ -128,9 +128,7 @@ export class ModuleFederationPlugin implements RspackPluginInstance {
 
       const runtimePlugins = options.runtimePlugins || [];
       options.runtimePlugins = runtimePlugins.concat(
-        require.resolve(
-          '@module-federation/inject-external-runtime-core-plugin',
-        ),
+        require.resolve('@module-federation/inject-external-runtime-core-plugin'),
       );
     }
 
@@ -142,7 +140,7 @@ export class ModuleFederationPlugin implements RspackPluginInstance {
     }
 
     const runtimeToolsSpecifier =
-      process.env.IS_ESM_BUILD === 'true'
+      process.env['IS_ESM_BUILD'] === 'true'
         ? '@module-federation/runtime-tools/dist/index.js'
         : '@module-federation/runtime-tools/dist/index.cjs';
     const implementationPath =
@@ -174,7 +172,7 @@ export class ModuleFederationPlugin implements RspackPluginInstance {
     ).apply(compiler);
 
     const runtimeEntrySpecifier =
-      process.env.IS_ESM_BUILD === 'true'
+      process.env['IS_ESM_BUILD'] === 'true'
         ? '@module-federation/runtime/dist/index.js'
         : '@module-federation/runtime/dist/index.cjs';
     let runtimePath: string;

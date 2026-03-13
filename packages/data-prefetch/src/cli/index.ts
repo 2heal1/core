@@ -62,7 +62,7 @@ export class PrefetchPlugin implements WebpackPluginInstance {
     }
 
     const runtimePluginFile =
-      process.env.IS_ESM_BUILD === 'true' ? '../plugin.js' : '../plugin.cjs';
+      process.env['IS_ESM_BUILD'] === 'true' ? '../plugin.js' : '../plugin.cjs';
     const runtimePath = path.resolve(__dirname, runtimePluginFile);
     if (!fs.existsSync(runtimePath)) {
       throw new Error(

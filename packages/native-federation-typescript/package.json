@@ -106,7 +106,7 @@
     "upath": "2.0.1"
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts && cp package.json dist && cp *.md dist",
+    "build": "rslib build --config rslib.config.ts && node -e \"const fs=require('fs');const path=require('path');const root='dist';(function w(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory())w(p);else if(e.name.endsWith('.d.ts')){fs.renameSync(p,p.slice(0,-5)+'.d.cts');}}})(root);\" && cp package.json dist && cp *.md dist",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.ts\"",
     "test": "pnpm exec vitest run --passWithNoTests --config vite.config.mts",
     "pre-release": "pnpm run test && pnpm run build"

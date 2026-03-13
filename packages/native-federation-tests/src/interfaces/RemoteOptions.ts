@@ -1,8 +1,8 @@
-import type { UserConfig } from 'tsdown';
+import type { RslibConfig } from '@rslib/core';
 
 export interface RemoteOptions {
   moduleFederationConfig: any;
-  additionalBundlerConfig?: UserConfig;
+  additionalBundlerConfig?: Partial<RslibConfig>;
   distFolder?: string;
   testsFolder?: string;
   deleteTestsFolder?: boolean;

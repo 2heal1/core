@@ -35,7 +35,7 @@ const { mkdirpSync } = require(
 ) as typeof import('webpack/lib/util/fs');
 
 function resolveRuntimePaths(implementation?: string) {
-  const ext = process.env.IS_ESM_BUILD === 'true' ? '.js' : '.cjs';
+  const ext = process.env['IS_ESM_BUILD'] === 'true' ? '.js' : '.cjs';
   const runtimeToolsSpec = `@module-federation/runtime-tools/dist/index${ext}`;
   const bundlerRuntimeSpec = `@module-federation/webpack-bundler-runtime/dist/index${ext}`;
   const runtimeSpec = `@module-federation/runtime/dist/index${ext}`;

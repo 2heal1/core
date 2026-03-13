@@ -124,7 +124,7 @@
     }
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.mts",
+    "build": "rslib build --config rslib.config.ts",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.js\" \"**/*.ts\"",
     "test": "pnpm exec jest --config jest.config.js --passWithNoTests",
     "pre-release": "pnpm run test && pnpm run build && rm -f ./dist/package.json"

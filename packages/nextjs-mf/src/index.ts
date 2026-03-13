@@ -4,7 +4,7 @@ export { NextFederationPlugin };
 export default NextFederationPlugin;
 
 if (
-  process.env.IS_ESM_BUILD !== 'true' &&
+  process.env['IS_ESM_BUILD'] !== 'true' &&
   typeof module !== 'undefined' &&
   typeof module.exports !== 'undefined'
 ) {

@@ -87,9 +87,9 @@
     "@module-federation/runtime-core": "workspace:*"
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts",
+    "build": "rslib build --config rslib.config.ts",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.ts\" \"package.json\"",
-    "build-debug": "RUNTIME_TSDOWN_MODE=debug tsdown --config tsdown.config.ts",
+    "build-debug": "RUNTIME_TSDOWN_MODE=debug rslib build --config rslib.config.ts",
     "pre-release": "pnpm run test && pnpm run build",
     "test": "vitest run -u -c vitest.config.ts"
   }

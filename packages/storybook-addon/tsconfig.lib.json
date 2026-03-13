@@ -1,11 +1,16 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
+    "rootDir": "./src",
     "declaration": true,
     "types": ["node"],
     "moduleResolution": "bundler"
   },
-  "include": ["src/**/*.ts", "preset.ts"],
-  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "rslib.config.ts"
+  ]
 }
