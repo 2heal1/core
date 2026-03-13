@@ -33,22 +33,14 @@ import type { moduleFederationPlugin } from '@module-federation/sdk';
 import logger from '../../logger';
 
 const resolveRuntimePluginPath = (): string =>
-  process.env.IS_ESM_BUILD === 'true'
-    ? require.resolve(
-        '@module-federation/nextjs-mf/dist/src/plugins/container/runtimePlugin.mjs',
-      )
-    : require.resolve(
-        '@module-federation/nextjs-mf/dist/src/plugins/container/runtimePlugin.js',
-      );
+  process.env['IS_ESM_BUILD'] === 'true'
+    ? require.resolve('@module-federation/nextjs-mf/dist/src/plugins/container/runtimePlugin.mjs')
+    : require.resolve('@module-federation/nextjs-mf/dist/src/plugins/container/runtimePlugin.js');
 
 const resolveNoopPath = (): string =>
-  process.env.IS_ESM_BUILD === 'true'
-    ? require.resolve(
-        '@module-federation/nextjs-mf/dist/src/federation-noop.mjs',
-      )
-    : require.resolve(
-        '@module-federation/nextjs-mf/dist/src/federation-noop.js',
-      );
+  process.env['IS_ESM_BUILD'] === 'true'
+    ? require.resolve('@module-federation/nextjs-mf/dist/src/federation-noop.mjs')
+    : require.resolve('@module-federation/nextjs-mf/dist/src/federation-noop.js');
 
 const resolveNodeRuntimePluginPath = (): string => {
   const nodePackageRoot = path.dirname(
@@ -58,7 +50,7 @@ const resolveNodeRuntimePluginPath = (): string => {
   return require.resolve(
     path.join(
       nodePackageRoot,
-      process.env.IS_ESM_BUILD === 'true'
+      process.env['IS_ESM_BUILD'] === 'true'
         ? 'dist/src/runtimePlugin.mjs'
         : 'dist/src/runtimePlugin.js',
     ),
@@ -252,7 +244,10 @@ export class NextFederationPlugin {
         ...this._options.shared,
       },
       manifest: {
-        ...(this._options.manifest ?? {}),
+        ...(typeof this._options.manifest === 'object' &&
+        this._options.manifest !== null
+          ? this._options.manifest
+          : {}),
         filePath: isServer ? '' : '/static/chunks',
       },
       // nextjs project needs to add config.watchOptions = ['**/node_modules/**', '**/@mf-types/**'] to prevent loop types update
@@ -270,4 +265,3 @@ export class NextFederationPlugin {
 }
 
 export default NextFederationPlugin;
-

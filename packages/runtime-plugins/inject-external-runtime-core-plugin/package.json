@@ -51,7 +51,7 @@
     "@module-federation/runtime-tools": "workspace:*"
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts --filter inject-external-runtime-core-plugin-build",
+    "build": "rslib build --config rslib.config.ts",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.ts\" \"package.json\"",
     "pre-release": "pnpm run build"
   }

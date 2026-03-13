@@ -30,7 +30,7 @@ interface NodeFederationContext {
 }
 
 const resolveRuntimePluginPath = (): string =>
-  process.env.IS_ESM_BUILD === 'true'
+  process.env['IS_ESM_BUILD'] === 'true'
     ? require.resolve('../runtimePlugin.mjs')
     : require.resolve('../runtimePlugin.js');
 

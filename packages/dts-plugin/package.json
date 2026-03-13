@@ -31,12 +31,12 @@
     },
     "./core": {
       "import": {
-        "types": "./dist/core.d.ts",
-        "default": "./dist/esm/core.mjs"
+        "types": "./dist/core/index.d.ts",
+        "default": "./dist/esm/core/index.mjs"
       },
       "require": {
-        "types": "./dist/core.d.ts",
-        "default": "./dist/core.js"
+        "types": "./dist/core/index.d.ts",
+        "default": "./dist/core/index.js"
       }
     },
     "./dynamic-remote-type-hints-plugin": {
@@ -57,7 +57,7 @@
         "./dist/index.d.ts"
       ],
       "core": [
-        "./dist/core.d.ts"
+        "./dist/core/index.d.ts"
       ],
       "dynamic-remote-type-hints-plugin": [
         "./dist/dynamic-remote-type-hints-plugin.d.ts"
@@ -101,7 +101,7 @@
     }
   },
   "scripts": {
-    "build": "tsdown --config ./tsdown.config.ts && sleep 1 && cp package.json ./dist && cp *.md ./dist",
+    "build": "rslib build --config rslib.config.ts && sleep 1 && cp package.json ./dist && cp *.md ./dist",
     "test": "node -e \"require('fs').rmSync('dist-test',{recursive:true,force:true,maxRetries:20,retryDelay:50})\" && pnpm run test-impl",
     "test-impl": "pnpm exec vitest run --passWithNoTests --config vite.config.mts",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.ts\" \"package.json\"",

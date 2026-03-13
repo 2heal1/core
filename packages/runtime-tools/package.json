@@ -83,7 +83,7 @@
     "@module-federation/webpack-bundler-runtime": "workspace:*"
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts",
+    "build": "rslib build --config rslib.config.ts",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.ts\" \"package.json\"",
     "test": "pnpm exec jest --config jest.config.cjs --passWithNoTests"
   }

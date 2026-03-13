@@ -8,8 +8,6 @@ import type {
   RuntimeGlobals,
   javascript,
 } from 'webpack';
-import type { SyncWaterfallHook } from 'tapable';
-
 const SortableSet = require(
   normalizeWebpackPath('webpack/lib/util/SortableSet'),
 ) as typeof import('webpack/lib/util/SortableSet');
@@ -19,14 +17,9 @@ type CompilationHooksJavascriptModulesPlugin = ReturnType<
 >;
 type RenderStartup = CompilationHooksJavascriptModulesPlugin['renderStartup'];
 
-type InferStartupRenderContext<T> =
-  T extends SyncWaterfallHook<
-    [infer Source, infer Module, infer StartupRenderContext]
-  >
-    ? StartupRenderContext
-    : never;
-
-type StartupRenderContext = InferStartupRenderContext<RenderStartup>;
+// Webpack's `renderStartup` hook context typing differs across versions.
+// We only rely on `chunk`, so keep the context minimal to avoid `never` inference.
+type StartupRenderContext = { chunk: Chunk };
 
 export interface Options {
   eager?: RegExp | ((module: Module) => boolean);

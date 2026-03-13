@@ -62,7 +62,9 @@ const resolvePackageFile = (
   return require.resolve(
     path.join(
       packageRoot,
-      process.env.IS_ESM_BUILD === 'true' ? esmRelativePath : cjsRelativePath,
+      process.env['IS_ESM_BUILD'] === 'true'
+        ? esmRelativePath
+        : cjsRelativePath,
     ),
   );
 };
@@ -484,9 +486,8 @@ export const moduleFederationConfigPlugin = (
         resolve: {
           alias: {
             // TODO: deprecated
-            '@modern-js/runtime/mf': require.resolve(
-              '@module-federation/modern-js/runtime',
-            ),
+            '@modern-js/runtime/mf':
+              require.resolve('@module-federation/modern-js/runtime'),
           },
         },
         source: {

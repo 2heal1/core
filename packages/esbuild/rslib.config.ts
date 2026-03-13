@@ -62,8 +62,8 @@ export default defineConfig({
     ],
     copy: [
       {
-        from: './src/resolve',
-        to: './resolve',
+        from: './src/resolve/package.json',
+        to: './resolve/package.json',
       },
     ],
   },

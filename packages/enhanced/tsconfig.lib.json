@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
+    "rootDir": "./src",
     "declaration": true,
     "types": ["node"]
   },
@@ -10,6 +10,7 @@
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     "dist/**",
-    "node_modules/**"
+    "node_modules/**",
+    "rslib.config.ts"
   ]
 }

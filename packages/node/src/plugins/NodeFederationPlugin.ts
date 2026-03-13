@@ -34,7 +34,7 @@ const createBundlerLogger: typeof createLogger =
 
 function getRuntimePluginPath(): string {
   return require.resolve(
-    process.env.IS_ESM_BUILD === 'true'
+    process.env['IS_ESM_BUILD'] === 'true'
       ? '../runtimePlugin.mjs'
       : '../runtimePlugin.js',
   );

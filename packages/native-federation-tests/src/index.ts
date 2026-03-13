@@ -1,7 +1,7 @@
 import ansiColors from 'ansi-colors';
 import { resolve } from 'path';
 import { mergeDeepRight, mergeRight } from 'rambda';
-import { build } from 'tsdown';
+import { createRslib, type RslibConfig } from '@rslib/core';
 import { UnpluginOptions, createUnplugin } from 'unplugin';
 
 import { retrieveHostConfig } from './configurations/hostPlugin';
@@ -13,6 +13,17 @@ import {
   deleteTestsFolder,
   downloadTypesArchive,
 } from './lib/archiveHandler';
+
+async function buildTests(config: RslibConfig) {
+  const rslib = await createRslib({
+    cwd: process.cwd(),
+    config,
+    loadEnv: false,
+  });
+
+  const result = await rslib.build();
+  await result.close();
+}
 
 export const NativeFederationTestsRemote = createUnplugin(
   (options: RemoteOptions) => {
@@ -26,22 +37,44 @@ export const NativeFederationTestsRemote = createUnplugin(
       name: 'native-federation-tests/remote',
       async writeBundle() {
         const buildConfig = mergeRight(remoteOptions.additionalBundlerConfig, {
-          external: [
-            /^[^./]/,
-            ...externalDeps.map((externalDep) => new RegExp(`^${externalDep}`)),
+          source: {
+            entry: mapComponentsToExpose,
+          },
+          output: {
+            distPath: {
+              root: compiledFilesFolder,
+            },
+            externals: [
+              /^[^./]/,
+              ...externalDeps.map(
+                (externalDep) => new RegExp(`^${externalDep}`),
+              ),
+            ],
+          },
+          logLevel: 'silent',
+          lib: [
+            {
+              format: 'cjs',
+              dts: false,
+              bundle: true,
+              performance: {
+                chunkSplit: {
+                  strategy: 'all-in-one',
+                },
+              },
+              tools: {
+                rspack: (rspackConfig) => {
+                  rspackConfig.optimization ??= {};
+                  rspackConfig.optimization.splitChunks = false;
+                  rspackConfig.optimization.runtimeChunk = false;
+                },
+              },
+            },
           ],
-          entry: mapComponentsToExpose,
-          format: ['cjs'],
-          dts: false,
-          outExtensions: () => ({
-            js: '.js',
-          }),
-          outDir: compiledFilesFolder,
-          silent: true,
-        });
+        } satisfies RslibConfig);
 
         try {
-          await build(buildConfig);
+          await buildTests(buildConfig);
 
           await createTestsArchive(remoteOptions, compiledFilesFolder);
 
