@@ -10,16 +10,20 @@ import {
   MFPrefetchCommon,
 } from '@module-federation/sdk';
 import { normalizeWebpackPath } from '@module-federation/sdk/normalize-webpack-path';
-import type { Compiler, WebpackPluginInstance } from 'webpack';
+import type {
+  Compiler,
+  WebpackPluginInstance,
+} from '@module-federation/webpack-type';
 
 import { TEMP_DIR } from '../common/constant';
 import { fileExistsWithCaseSync, fixPrefetchPath } from '../common/node-utils';
 import { getPrefetchId } from '../common/runtime-utils';
 import { SHARED_STRATEGY } from '../constant';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { RuntimeGlobals, Template } = require(
   normalizeWebpackPath('webpack'),
-) as typeof import('webpack');
+) as typeof import('@module-federation/webpack-type');
 
 const createBundlerLogger: typeof createLogger =
   typeof createInfrastructureLogger === 'function'
@@ -87,6 +91,7 @@ export class PrefetchPlugin implements WebpackPluginInstance {
     if (fs.existsSync(asyncEntryPath)) {
       fs.unlinkSync(asyncEntryPath);
     }
+    // @ts-ignore
     if (!this.options.dataPrefetch) {
       return;
     }
