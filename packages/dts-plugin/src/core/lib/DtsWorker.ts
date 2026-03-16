@@ -9,7 +9,9 @@ import { cloneDeepOptions, isDebugMode } from './utils';
 
 export type DtsWorkerOptions = DTSManagerOptions;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const __extname = path.extname(__filename);
 
 export class DtsWorker {
   rpcWorker: RpcWorker<RpcMethod>;
@@ -19,7 +21,7 @@ export class DtsWorker {
     this._options = cloneDeepOptions(options);
     this.removeUnSerializationOptions();
     this.rpcWorker = createRpcWorker(
-      path.resolve(__dirname, './fork-generate-dts.mjs'),
+      path.resolve(__dirname, `./fork-generate-dts${__extname}`),
       {},
       undefined,
       true,
