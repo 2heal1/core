@@ -198,7 +198,7 @@ class ConsumeSharedModule extends Module {
     return TYPES;
   }
 
-  getSourceBasicTypes(): Set<string> {
+  override getSourceBasicTypes(): Set<string> {
     return JAVASCRIPT_TYPES;
   }
 
