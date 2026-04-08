@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'node:fs';
 import { join } from 'path';
 import { describe, expect, it } from 'vitest';
 import { ThirdPartyExtractor } from './ThirdPartyExtractor';
@@ -28,7 +28,9 @@ describe('ThirdPartyExtractor', () => {
 
   it('should correctly infer pkg types dir without types field in package.json', () => {
     const typedReactDir = thirdPartyExtractor.inferPkgDir('react');
-    const pkgJson = fs.readJSONSync(`${typedReactDir}/package.json`);
+    const pkgJson = JSON.parse(
+      fs.readFileSync(`${typedReactDir}/package.json`, 'utf8'),
+    ) as Record<string, any>;
 
     expect(pkgJson.name).toBe('@types/react');
   });

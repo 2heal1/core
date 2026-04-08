@@ -1,5 +1,6 @@
 import findPkg from 'find-pkg';
-import fs from 'fs-extra';
+import fs from 'node:fs';
+import * as fsp from 'node:fs/promises';
 import path from 'path';
 import resolve from 'resolve';
 import { getTypedName, getPackageRootDir } from './utils';
@@ -134,19 +135,14 @@ class ThirdPartyExtractor {
     if (!Object.keys(this.pkgs).length) {
       return;
     }
-    const ensureDir = async (dir: string) => {
-      try {
-        await fs.mkdir(dir, { recursive: true });
-      } catch (err) {
-        if (err.code !== 'EEXIST') throw err;
-      }
-    };
+    const ensureDir = async (dir: string) =>
+      await fsp.mkdir(dir, { recursive: true });
     const copyFiles = async (srcDir: string, destDir: string) => {
       if (srcDir.startsWith('.')) {
         return;
       }
 
-      const files = await fs.readdir(srcDir);
+      const files = await fsp.readdir(srcDir);
 
       await Promise.all(
         files.map(async (file) => {
@@ -157,7 +153,7 @@ class ThirdPartyExtractor {
             return;
           }
 
-          const stats = await fs.lstat(fullPath);
+          const stats = await fsp.lstat(fullPath);
 
           if (stats.isDirectory()) {
             // create target dir
@@ -169,7 +165,7 @@ class ThirdPartyExtractor {
               fullPath.endsWith('.d.ts') ||
               fullPath.endsWith('package.json')
             ) {
-              await fs.copyFile(fullPath, path.join(destDir, file));
+              await fsp.copyFile(fullPath, path.join(destDir, file));
             }
           }
         }),

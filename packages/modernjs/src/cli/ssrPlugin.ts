@@ -1,5 +1,4 @@
 import path from 'path';
-import fs from 'fs-extra';
 import {
   ModuleFederationPlugin as WebpackModuleFederationPlugin,
   AsyncBoundaryPlugin,

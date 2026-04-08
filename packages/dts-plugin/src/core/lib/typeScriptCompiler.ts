@@ -1,5 +1,6 @@
-import fse from 'fs-extra';
-const { ensureDirSync, writeFileSync, existsSync } = fse;
+import fs from 'node:fs';
+const { writeFileSync, existsSync, mkdirSync } = fs;
+const ensureDirSync = (dir: string) => mkdirSync(dir, { recursive: true });
 import crypto from 'crypto';
 import { stat, readdir, writeFile, rm, readFile } from 'fs/promises';
 import {

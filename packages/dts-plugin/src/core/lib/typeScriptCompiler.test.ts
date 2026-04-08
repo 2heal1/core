@@ -1,7 +1,6 @@
 import dirTree from 'directory-tree';
-import { rmSync } from 'fs';
-import fse from 'fs-extra';
-const { readJSONSync, ensureDirSync } = fse;
+import { rmSync, readFileSync, mkdirSync } from 'fs';
+const ensureDirSync = (dir: string) => mkdirSync(dir, { recursive: true });
 import os from 'os';
 import { join, resolve, sep } from 'path';
 import util from 'util';
@@ -18,8 +17,8 @@ import {
 describe('typeScriptCompiler', () => {
   const tmpDir = join(os.tmpdir(), 'typeScriptCompiler');
 
-  const basicConfig = readJSONSync(
-    join(__dirname, '../../..', './tsconfig.spec.json'),
+  const basicConfig = JSON.parse(
+    readFileSync(join(__dirname, '../../..', './tsconfig.spec.json'), 'utf8'),
   );
   const projectRoot = join(__dirname, '../../..');
 
