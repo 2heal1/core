@@ -1,5 +1,4 @@
 import AdmZip from 'adm-zip';
-import axios from 'axios';
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'fs';
 import os from 'os';
 import { join } from 'path';
@@ -62,17 +61,25 @@ describe('archiveHandler', () => {
       const zip = new AdmZip();
       zip.addLocalFolder(tmpDir);
 
-      axios.get = vi.fn().mockResolvedValueOnce({ data: zip.toBuffer() });
+      const buf = zip.toBuffer();
+      const ab = buf.buffer.slice(
+        buf.byteOffset,
+        buf.byteOffset + buf.byteLength,
+      );
+      (globalThis as any).fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        arrayBuffer: vi.fn().mockResolvedValueOnce(ab),
+      });
 
       await downloadTypesArchive(hostOptions)([
         destinationFolder,
         fileToDownload,
       ]);
       expect(existsSync(archivePath)).toBeTruthy();
-      expect(axios.get).toHaveBeenCalledTimes(1);
-      expect(axios.get).toHaveBeenCalledWith(fileToDownload, {
-        responseType: 'arraybuffer',
-      });
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(1);
+      expect((globalThis as any).fetch).toHaveBeenCalledWith(fileToDownload);
     });
 
     it('correctly extracts downloaded archive - skips same zip file', async () => {
@@ -81,7 +88,17 @@ describe('archiveHandler', () => {
       const zip = new AdmZip();
       zip.addLocalFolder(tmpDir);
 
-      axios.get = vi.fn().mockResolvedValue({ data: zip.toBuffer() });
+      const buf = zip.toBuffer();
+      const ab = buf.buffer.slice(
+        buf.byteOffset,
+        buf.byteOffset + buf.byteLength,
+      );
+      (globalThis as any).fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        arrayBuffer: vi.fn().mockResolvedValue(ab),
+      });
 
       const downloader = downloadTypesArchive(hostOptions);
 
@@ -89,35 +106,29 @@ describe('archiveHandler', () => {
       await downloader([destinationFolder, fileToDownload]);
 
       expect(existsSync(archivePath)).toBeTruthy();
-      expect(axios.get).toHaveBeenCalledTimes(2);
-      expect(axios.get.mock.calls[0]).toStrictEqual([
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(2);
+      expect((globalThis as any).fetch.mock.calls[0]).toStrictEqual([
         fileToDownload,
-        {
-          responseType: 'arraybuffer',
-        },
       ]);
-      expect(axios.get.mock.calls[1]).toStrictEqual([
+      expect((globalThis as any).fetch.mock.calls[1]).toStrictEqual([
         fileToDownload,
-        {
-          responseType: 'arraybuffer',
-        },
       ]);
     });
 
     it('correctly handles exception', async () => {
       const message = 'Rejected value';
 
-      axios.get = vi.fn().mockRejectedValue(new Error(message));
+      (globalThis as any).fetch = vi.fn().mockRejectedValue(new Error(message));
 
       await expect(() =>
         downloadTypesArchive(hostOptions)([destinationFolder, fileToDownload]),
       ).rejects.toThrowError(
         `Network error: Unable to download federated mocks for '${destinationFolder}' from '${fileToDownload}' because '${message}'`,
       );
-      expect(axios.get).toHaveBeenCalledTimes(hostOptions.maxRetries);
-      expect(axios.get).toHaveBeenCalledWith(fileToDownload, {
-        responseType: 'arraybuffer',
-      });
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(
+        hostOptions.maxRetries,
+      );
+      expect((globalThis as any).fetch).toHaveBeenCalledWith(fileToDownload);
     });
   });
 });

@@ -1,30 +1,53 @@
 import { it, describe, expect, vi } from 'vitest';
 import http from 'http';
+import { EventEmitter } from 'node:events';
 import { axiosGet, cloneDeepOptions } from './utils';
 import type { DTSManagerOptions } from '../interfaces/DTSManagerOptions';
 
-vi.mock('axios', () => ({
-  default: {
-    get: vi.fn(() => Promise.resolve({ data: 'mocked response' })),
-  },
-}));
+const mockHttpRequestOk = () => {
+  return vi.spyOn(http, 'request').mockImplementation((...args: any[]) => {
+    const cb = args[2] as (res: any) => void;
+    const res = new EventEmitter() as any;
+    res.statusCode = 200;
+    res.statusMessage = 'OK';
+    res.headers = { 'content-type': 'application/json' };
+
+    queueMicrotask(() => {
+      cb(res);
+      res.emit('data', Buffer.from('{}'));
+      res.emit('end');
+    });
+
+    const req = new EventEmitter() as any;
+    req.setTimeout = vi.fn();
+    req.end = vi.fn();
+    req.destroy = vi.fn();
+    return req;
+  });
+};
 
 it('axiosGet should use agents with family set to 4', async () => {
   const httpSpy = vi.spyOn(http, 'Agent');
+  const requestSpy = mockHttpRequestOk();
 
   await axiosGet('http://localhost');
 
   expect(httpSpy).toHaveBeenCalledWith({ family: 4 });
+
+  requestSpy.mockRestore();
 
   httpSpy.mockRestore();
 });
 
 it('axiosGet should allow to use agents with family set to 6', async () => {
   const httpSpy = vi.spyOn(http, 'Agent');
+  const requestSpy = mockHttpRequestOk();
 
   await axiosGet('http://localhost', { family: 6 });
 
   expect(httpSpy).toHaveBeenCalledWith({ family: 6 });
+
+  requestSpy.mockRestore();
 
   httpSpy.mockRestore();
 });

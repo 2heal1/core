@@ -1,5 +1,4 @@
 import AdmZip from 'adm-zip';
-import axios from 'axios';
 import dirTree from 'directory-tree';
 import { rm } from 'fs/promises';
 import { join, resolve } from 'path';
@@ -197,7 +196,17 @@ describe('index', () => {
       const zip = new AdmZip();
       zip.addLocalFolder(distFolder);
 
-      axios.get = vi.fn().mockResolvedValueOnce({ data: zip.toBuffer() });
+      const buf = zip.toBuffer();
+      const ab = buf.buffer.slice(
+        buf.byteOffset,
+        buf.byteOffset + buf.byteLength,
+      );
+      (globalThis as any).fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        arrayBuffer: vi.fn().mockResolvedValueOnce(ab),
+      });
 
       const unplugin = NativeFederationTypeScriptHost.rollup(
         options,

@@ -12,6 +12,9 @@
     },
     {
       "files": ["*.js", "*.jsx"],
+      "env": {
+        "node": true
+      },
       "rules": {}
     }
   ]

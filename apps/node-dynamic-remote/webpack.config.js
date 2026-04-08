@@ -67,7 +67,6 @@ module.exports = (_env, argv = {}) => {
           './test-with-lodash': './src/expose-with-lodash.js',
         },
         shared: {
-          axios: { singleton: true },
           lodash: { singleton: true },
         },
       }),

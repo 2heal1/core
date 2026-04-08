@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import axios, { type AxiosRequestConfig } from 'axios';
 import http from 'http';
 import https from 'https';
 import { moduleFederationPlugin, getProcessEnv } from '@module-federation/sdk';
@@ -158,16 +157,80 @@ const getEnvHeaders = (): Record<string, string> => {
   };
 };
 
-export async function axiosGet(url: string, config?: AxiosRequestConfig) {
+export type AxiosGetConfig = {
+  headers?: Record<string, string>;
+  timeout?: number;
+  family?: 4 | 6;
+  responseType?: 'arraybuffer';
+};
+
+export async function axiosGet(url: string, config?: AxiosGetConfig) {
   const httpAgent = new http.Agent({ family: config?.family ?? 4 });
   const httpsAgent = new https.Agent({ family: config?.family ?? 4 });
-  return axios.get(url, {
-    httpAgent,
-    httpsAgent,
-    ...{
-      headers: getEnvHeaders(),
-    },
-    ...config,
-    timeout: config?.timeout || 60000,
+
+  const urlObj = new URL(url);
+  const transport = urlObj.protocol === 'https:' ? https : http;
+  const agent = urlObj.protocol === 'https:' ? httpsAgent : httpAgent;
+  const timeout = config?.timeout ?? 60_000;
+  const headers = {
+    ...getEnvHeaders(),
+    ...(config?.headers ?? {}),
+  };
+
+  return await new Promise<{
+    data: unknown;
+    headers: http.IncomingHttpHeaders;
+    status: number;
+  }>((resolve, reject) => {
+    const req = transport.request(
+      urlObj,
+      {
+        method: 'GET',
+        headers,
+        agent,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+        res.on('end', () => {
+          const status = res.statusCode ?? 0;
+          const buffer = Buffer.concat(chunks);
+
+          if (status < 200 || status >= 300) {
+            reject(
+              new Error(
+                `Request failed: ${status} ${res.statusMessage ?? ''}`.trim(),
+              ),
+            );
+            return;
+          }
+
+          if (config?.responseType === 'arraybuffer') {
+            resolve({ data: buffer, headers: res.headers, status });
+            return;
+          }
+
+          const text = buffer.toString('utf8');
+          const contentType = String(res.headers['content-type'] ?? '');
+          if (contentType.includes('application/json')) {
+            try {
+              resolve({ data: JSON.parse(text), headers: res.headers, status });
+              return;
+            } catch (e) {
+              reject(e);
+              return;
+            }
+          }
+
+          resolve({ data: text, headers: res.headers, status });
+        });
+      },
+    );
+
+    req.on('error', reject);
+    req.setTimeout(timeout, () =>
+      req.destroy(new Error(`Request timed out after ${timeout}ms`)),
+    );
+    req.end();
   });
 }

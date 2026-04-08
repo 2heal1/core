@@ -1,10 +1,10 @@
 import AdmZip from 'adm-zip';
-import axios from 'axios';
 import dirTree from 'directory-tree';
 import { readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { describe, expect, it, vi, beforeAll } from 'vitest';
 import { DTSManager } from './DTSManager';
+import * as utils from './utils';
 const TEST_DIT_DIR = 'dist-test';
 
 describe('DTSManager advance usage', () => {
@@ -97,15 +97,25 @@ describe('DTSManager advance usage', () => {
       remoteOptions.typesFolder,
     );
     const apiFile = `${apiDistFolder}.d.ts`;
-    // const prevAxiosGet = axios.get;
-    axios.get = (url) => {
+    vi.spyOn(utils, 'axiosGet').mockImplementation((url, config) => {
       if (url.includes('.d.ts')) {
-        return vi
-          .fn()
-          .mockResolvedValueOnce({ data: readFileSync(apiFile, 'utf8') })();
+        return Promise.resolve({
+          data: readFileSync(apiFile, 'utf8'),
+          headers: {},
+          status: 200,
+        });
       }
-      return vi.fn().mockResolvedValueOnce({ data: zip.toBuffer() })();
-    };
+
+      if (config?.responseType === 'arraybuffer') {
+        return Promise.resolve({
+          data: zip.toBuffer(),
+          headers: {},
+          status: 200,
+        });
+      }
+
+      return Promise.resolve({ data: '', headers: {}, status: 200 });
+    });
 
     await dtsManager.consumeTypes();
 
