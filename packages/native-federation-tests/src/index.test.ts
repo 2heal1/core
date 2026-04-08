@@ -3,7 +3,7 @@ import dirTree from 'directory-tree';
 import { rm } from 'fs/promises';
 import { join, resolve } from 'path';
 import { UnpluginOptions } from 'unplugin';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   NativeFederationTestsHost,
@@ -13,6 +13,11 @@ import {
 describe('index', () => {
   const projectRoot = join(__dirname, '..');
   const exposedIndex = join(__dirname, 'index.ts');
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
   describe('NativeFederationTestsRemote', () => {
     it('throws for missing moduleFederationConfig', () => {
@@ -180,12 +185,15 @@ describe('index', () => {
         buf.byteOffset,
         buf.byteOffset + buf.byteLength,
       );
-      (globalThis as any).fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        arrayBuffer: vi.fn().mockResolvedValueOnce(ab),
-      });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          arrayBuffer: vi.fn().mockResolvedValueOnce(ab),
+        }),
+      );
 
       const unplugin = NativeFederationTestsHost.rollup(
         options,

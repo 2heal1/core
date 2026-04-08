@@ -326,12 +326,13 @@ describe('DTSManager', () => {
       const distFolder = join(projectRoot, TEST_DIT_DIR, typesFolder);
       const zip = new AdmZip();
       zip.addLocalFolder(distFolder);
-      vi.spyOn(utils, 'axiosGet').mockResolvedValueOnce({
+      const axiosGetMock = vi.spyOn(utils, 'axiosGet').mockResolvedValueOnce({
         data: zip.toBuffer(),
         headers: {},
         status: 200,
       });
       await dtsManager.consumeTypes();
+      axiosGetMock.mockRestore();
 
       expect(
         dirTree(targetFolder, {
@@ -341,8 +342,11 @@ describe('DTSManager', () => {
     });
 
     it('no delete exist remote types if fetch new remote types failed', async () => {
-      vi.spyOn(utils, 'axiosGet').mockRejectedValue(new Error('error'));
+      const axiosGetMock = vi
+        .spyOn(utils, 'axiosGet')
+        .mockRejectedValue(new Error('error'));
       await dtsManager.consumeTypes();
+      axiosGetMock.mockRestore();
       expect(
         dirTree(targetFolder, {
           exclude: [/node_modules/, /dev-worker/, /plugins/, /server/],
@@ -490,13 +494,13 @@ describe('DTSManager', () => {
 
   it('update specific remote while updateMode is PASSIVE', async () => {
     const targetFolder = join(projectRoot, hostOptions.typesFolder);
-    rmSync(targetFolder, { recursive: true });
+    rmSync(targetFolder, { recursive: true, force: true });
     expect(existsSync(targetFolder)).toEqual(false);
 
     const distFolder = join(projectRoot, TEST_DIT_DIR, typesFolder);
     const zip = new AdmZip();
     zip.addLocalFolder(distFolder);
-    vi.spyOn(utils, 'axiosGet').mockResolvedValueOnce({
+    const axiosGetMock = vi.spyOn(utils, 'axiosGet').mockResolvedValueOnce({
       data: zip.toBuffer(),
       headers: {},
       status: 200,
@@ -507,6 +511,8 @@ describe('DTSManager', () => {
       remoteTarPath: '',
       updateMode: UpdateMode.PASSIVE,
     });
+
+    axiosGetMock.mockRestore();
 
     expect(
       dirTree(targetFolder, {

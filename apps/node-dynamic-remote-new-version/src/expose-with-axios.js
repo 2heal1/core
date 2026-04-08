@@ -1,3 +1,3 @@
 module.exports = function () {
-  return `new version :fetch`;
+  return 'new version :fetch';
 };

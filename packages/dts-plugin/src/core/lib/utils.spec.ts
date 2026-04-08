@@ -1,55 +1,81 @@
-import { it, describe, expect, vi } from 'vitest';
-import http from 'http';
-import { EventEmitter } from 'node:events';
+import { it, describe, expect, vi, beforeEach, afterEach } from 'vitest';
+import { Agent } from 'undici';
 import { axiosGet, cloneDeepOptions } from './utils';
 import type { DTSManagerOptions } from '../interfaces/DTSManagerOptions';
 
-const mockHttpRequestOk = () => {
-  return vi.spyOn(http, 'request').mockImplementation((...args: any[]) => {
-    const cb = args[2] as (res: any) => void;
-    const res = new EventEmitter() as any;
-    res.statusCode = 200;
-    res.statusMessage = 'OK';
-    res.headers = { 'content-type': 'application/json' };
-
-    queueMicrotask(() => {
-      cb(res);
-      res.emit('data', Buffer.from('{}'));
-      res.emit('end');
-    });
-
-    const req = new EventEmitter() as any;
-    req.setTimeout = vi.fn();
-    req.end = vi.fn();
-    req.destroy = vi.fn();
-    return req;
-  });
-};
-
-it('axiosGet should use agents with family set to 4', async () => {
-  const httpSpy = vi.spyOn(http, 'Agent');
-  const requestSpy = mockHttpRequestOk();
-
-  await axiosGet('http://localhost');
-
-  expect(httpSpy).toHaveBeenCalledWith({ family: 4 });
-
-  requestSpy.mockRestore();
-
-  httpSpy.mockRestore();
+vi.mock('undici', () => {
+  return {
+    Agent: vi.fn().mockImplementation(() => ({
+      close: vi.fn().mockResolvedValue(undefined),
+    })),
+  };
 });
 
-it('axiosGet should allow to use agents with family set to 6', async () => {
-  const httpSpy = vi.spyOn(http, 'Agent');
-  const requestSpy = mockHttpRequestOk();
+const originalFetch = globalThis.fetch;
 
-  await axiosGet('http://localhost', { family: 6 });
+beforeEach(() => {
+  vi.useRealTimers();
+  vi.stubGlobal('fetch', vi.fn());
+});
 
-  expect(httpSpy).toHaveBeenCalledWith({ family: 6 });
+afterEach(() => {
+  vi.unstubAllGlobals();
+  (globalThis as any).fetch = originalFetch;
+});
 
-  requestSpy.mockRestore();
+it('axiosGet（fetch）成功：默认 family=4', async () => {
+  const mockFetch = vi.mocked(globalThis.fetch as any);
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    headers: new Headers({ 'content-type': 'application/json' }),
+    json: vi.fn().mockResolvedValueOnce({ ok: true }),
+    text: vi.fn(),
+    arrayBuffer: vi.fn(),
+  });
 
-  httpSpy.mockRestore();
+  const res = await axiosGet('http://localhost');
+  expect(res.data).toEqual({ ok: true });
+
+  expect(vi.mocked(Agent)).toHaveBeenCalledWith({ connect: { family: 4 } });
+  expect(mockFetch).toHaveBeenCalledTimes(1);
+});
+
+it('axiosGet（fetch）成功：支持 family=6', async () => {
+  const mockFetch = vi.mocked(globalThis.fetch as any);
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    headers: new Headers({ 'content-type': 'text/plain' }),
+    json: vi.fn(),
+    text: vi.fn().mockResolvedValueOnce('ok'),
+    arrayBuffer: vi.fn(),
+  });
+
+  const res = await axiosGet('http://localhost', { family: 6 });
+  expect(res.data).toBe('ok');
+
+  expect(vi.mocked(Agent)).toHaveBeenCalledWith({ connect: { family: 6 } });
+  expect(mockFetch).toHaveBeenCalledTimes(1);
+});
+
+it('axiosGet（fetch）失败：非 2xx 会抛错', async () => {
+  const mockFetch = vi.mocked(globalThis.fetch as any);
+  mockFetch.mockResolvedValueOnce({
+    ok: false,
+    status: 404,
+    statusText: 'Not Found',
+    headers: new Headers(),
+    json: vi.fn(),
+    text: vi.fn(),
+    arrayBuffer: vi.fn(),
+  });
+
+  await expect(axiosGet('http://localhost')).rejects.toThrow(
+    'Request failed: 404 Not Found',
+  );
 });
 
 describe('cloneDeepOptions', () => {

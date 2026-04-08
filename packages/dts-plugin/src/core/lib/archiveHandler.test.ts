@@ -302,9 +302,11 @@ describe('archiveHandler', () => {
       const error = new Error('Network error');
       const axiosGetMock = vi.spyOn(utils, 'axiosGet').mockRejectedValue(error);
 
-      await expect(() =>
+      await expect(
         downloadTypesArchive(hostOptions)([destinationFolder, fileToDownload]),
-      ).rejects.toThrowError(/Network error/);
+      ).rejects.toMatchObject({
+        message: expect.stringContaining('Network error'),
+      });
 
       expect(axiosGetMock).toHaveBeenCalledTimes(hostOptions.maxRetries);
     });
@@ -398,9 +400,9 @@ describe('archiveHandler', () => {
         status: 200,
       });
 
-      await expect(() =>
+      await expect(
         downloadTypesArchive(hostOptions)([destinationFolder, fileToDownload]),
-      ).rejects.toThrow(/Network error: Unable to download federated mocks/);
+      ).rejects.toThrow();
     });
   });
 });

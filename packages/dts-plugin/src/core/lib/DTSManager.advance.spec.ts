@@ -97,25 +97,26 @@ describe('DTSManager advance usage', () => {
       remoteOptions.typesFolder,
     );
     const apiFile = `${apiDistFolder}.d.ts`;
-    vi.spyOn(utils, 'axiosGet').mockImplementation((url, config) => {
-      if (url.includes('.d.ts')) {
-        return Promise.resolve({
-          data: readFileSync(apiFile, 'utf8'),
-          headers: {},
-          status: 200,
-        });
-      }
+    vi.spyOn(utils, 'axiosGet').mockImplementation(
+      (url: string, config?: any) => {
+        if (url.includes('.d.ts')) {
+          return Promise.resolve({
+            data: readFileSync(apiFile, 'utf8'),
+            headers: {},
+            status: 200,
+          });
+        }
+        if (config?.responseType === 'arraybuffer') {
+          return Promise.resolve({
+            data: zip.toBuffer(),
+            headers: {},
+            status: 200,
+          });
+        }
 
-      if (config?.responseType === 'arraybuffer') {
-        return Promise.resolve({
-          data: zip.toBuffer(),
-          headers: {},
-          status: 200,
-        });
-      }
-
-      return Promise.resolve({ data: '', headers: {}, status: 200 });
-    });
+        return Promise.resolve({ data: '', headers: {}, status: 200 });
+      },
+    );
 
     await dtsManager.consumeTypes();
 

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import http from 'http';
-import https from 'https';
+import { Agent } from 'undici';
 import { moduleFederationPlugin, getProcessEnv } from '@module-federation/sdk';
 import ansiColors from 'ansi-colors';
 import { retrieveRemoteConfig } from '../configurations/remotePlugin';
@@ -165,72 +164,72 @@ export type AxiosGetConfig = {
 };
 
 export async function axiosGet(url: string, config?: AxiosGetConfig) {
-  const httpAgent = new http.Agent({ family: config?.family ?? 4 });
-  const httpsAgent = new https.Agent({ family: config?.family ?? 4 });
-
-  const urlObj = new URL(url);
-  const transport = urlObj.protocol === 'https:' ? https : http;
-  const agent = urlObj.protocol === 'https:' ? httpsAgent : httpAgent;
   const timeout = config?.timeout ?? 60_000;
   const headers = {
     ...getEnvHeaders(),
     ...(config?.headers ?? {}),
   };
 
-  return await new Promise<{
-    data: unknown;
-    headers: http.IncomingHttpHeaders;
-    status: number;
-  }>((resolve, reject) => {
-    const req = transport.request(
-      urlObj,
-      {
-        method: 'GET',
-        headers,
-        agent,
-      },
-      (res) => {
-        const chunks: Buffer[] = [];
-        res.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-        res.on('end', () => {
-          const status = res.statusCode ?? 0;
-          const buffer = Buffer.concat(chunks);
-
-          if (status < 200 || status >= 300) {
-            reject(
-              new Error(
-                `Request failed: ${status} ${res.statusMessage ?? ''}`.trim(),
-              ),
-            );
-            return;
-          }
-
-          if (config?.responseType === 'arraybuffer') {
-            resolve({ data: buffer, headers: res.headers, status });
-            return;
-          }
-
-          const text = buffer.toString('utf8');
-          const contentType = String(res.headers['content-type'] ?? '');
-          if (contentType.includes('application/json')) {
-            try {
-              resolve({ data: JSON.parse(text), headers: res.headers, status });
-              return;
-            } catch (e) {
-              reject(e);
-              return;
-            }
-          }
-
-          resolve({ data: text, headers: res.headers, status });
-        });
-      },
-    );
-
-    req.on('error', reject);
-    req.setTimeout(timeout, () =>
-      req.destroy(new Error(`Request timed out after ${timeout}ms`)),
-    );
-    req.end();
+  const dispatcher = new Agent({
+    connect: {
+      family: config?.family ?? 4,
+    },
   });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const resp = await (fetch as any)(url, {
+      method: 'GET',
+      headers,
+      signal: controller.signal,
+      dispatcher,
+    });
+
+    if (!resp.ok) {
+      throw new Error(`Request failed: ${resp.status} ${resp.statusText}`);
+    }
+
+    const resHeaders: Record<string, string> = {};
+    resp.headers.forEach((value: string, key: string) => {
+      resHeaders[key.toLowerCase()] = value;
+    });
+
+    if (config?.responseType === 'arraybuffer') {
+      const ab = await resp.arrayBuffer();
+      return {
+        data: Buffer.from(ab),
+        headers: resHeaders,
+        status: resp.status,
+      };
+    }
+
+    const contentType = String(resp.headers.get('content-type') ?? '');
+    if (contentType.includes('application/json')) {
+      return {
+        data: await resp.json(),
+        headers: resHeaders,
+        status: resp.status,
+      };
+    }
+
+    return {
+      data: await resp.text(),
+      headers: resHeaders,
+      status: resp.status,
+    };
+  } catch (err) {
+    if ((err as any)?.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeout}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+    try {
+      await dispatcher.close();
+    } catch {
+      // ignore
+    }
+  }
 }

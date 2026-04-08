@@ -2,7 +2,7 @@ import AdmZip from 'adm-zip';
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'fs';
 import os from 'os';
 import { join } from 'path';
-import { afterAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 
 import { RemoteOptions } from '../interfaces/RemoteOptions';
 import { createTestsArchive, downloadTypesArchive } from './archiveHandler';
@@ -15,6 +15,11 @@ describe('archiveHandler', () => {
 
   afterAll(() => {
     rmSync(tmpDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('createTypesArchive', () => {
@@ -35,7 +40,9 @@ describe('archiveHandler', () => {
     });
 
     it('throws for unexisting outDir', async () => {
-      expect(createTestsArchive(remoteOptions, '/foo')).rejects.toThrowError();
+      await expect(
+        createTestsArchive(remoteOptions, '/foo'),
+      ).rejects.toThrowError();
     });
   });
 
@@ -52,10 +59,11 @@ describe('archiveHandler', () => {
     };
 
     it('throws for unexisting url', async () => {
-      (globalThis as any).fetch = vi
-        .fn()
-        .mockRejectedValueOnce(new Error('getaddrinfo ENOTFOUND foo.it'));
-      expect(
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockRejectedValue(new Error('getaddrinfo ENOTFOUND foo.it')),
+      );
+      await expect(
         downloadTypesArchive(hostOptions)([tmpDir, 'https://foo.it']),
       ).rejects.toThrowError(
         'Network error: Unable to download federated mocks',
@@ -72,13 +80,15 @@ describe('archiveHandler', () => {
         buf.byteOffset,
         buf.byteOffset + buf.byteLength,
       );
-      (globalThis as any).fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        arrayBuffer: vi.fn().mockResolvedValueOnce(ab),
-      });
-
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          arrayBuffer: vi.fn().mockResolvedValueOnce(ab),
+        }),
+      );
       await downloadTypesArchive(hostOptions)([
         destinationFolder,
         fileToDownload,
@@ -95,12 +105,15 @@ describe('archiveHandler', () => {
         buf.byteOffset,
         buf.byteOffset + buf.byteLength,
       );
-      (globalThis as any).fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        arrayBuffer: vi.fn().mockResolvedValue(ab),
-      });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          arrayBuffer: vi.fn().mockResolvedValue(ab),
+        }),
+      );
 
       const downloader = downloadTypesArchive(hostOptions);
 
@@ -108,13 +121,31 @@ describe('archiveHandler', () => {
       await downloader([destinationFolder, fileToDownload]);
 
       expect(existsSync(archivePath)).toBeTruthy();
-      expect((globalThis as any).fetch).toHaveBeenCalledTimes(2);
-      expect((globalThis as any).fetch.mock.calls[0]).toStrictEqual([
+      expect(vi.mocked(globalThis.fetch as any)).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(globalThis.fetch as any).mock.calls[0]).toStrictEqual([
         fileToDownload,
       ]);
-      expect((globalThis as any).fetch.mock.calls[1]).toStrictEqual([
+      expect(vi.mocked(globalThis.fetch as any).mock.calls[1]).toStrictEqual([
         fileToDownload,
       ]);
+    });
+
+    it('fails when response is not ok (covers non-2xx branch)', async () => {
+      const opts = { ...hostOptions, maxRetries: 1 };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+          arrayBuffer: vi.fn(),
+        }),
+      );
+
+      await expect(
+        downloadTypesArchive(opts)([destinationFolder, fileToDownload]),
+      ).rejects.toThrowError('Request failed: 404 Not Found');
+      expect(vi.mocked(globalThis.fetch as any)).toHaveBeenCalledTimes(1);
     });
   });
 });
