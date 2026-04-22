@@ -89,3 +89,9 @@ Yes, when you debug with multiple tabs open simultaneously, the Chrome DevTool p
 ### Partial configuration matches rules
 
 The plugin will filter out **modules that match the configuration rules** for proxying.
+
+### In a multi-hop chain (e.g. A → B → C), why can't I see some remotes when I open the panel?
+
+In a multi-hop consumption chain, B often consumes C via **dynamic registration / dynamic loading** (for example, route-based lazy loading or condition-based registration). This means that when you **open the Devtools panel for the first time**, the plugin may collect module info earlier than C is actually registered/loaded, so the target remote may not show up in the Proxy selector or Module Info.
+
+Solution: first trigger the remote to load in the page (e.g. navigate to the relevant route or perform the related action), then click the **Refresh** button in the plugin panel to re-fetch module info, and finally configure the proxy.
