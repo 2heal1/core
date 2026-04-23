@@ -89,12 +89,46 @@ export function resolveRspackRuntimeAlias(
   );
 }
 
+function validateExposesKeys(
+  exposes: moduleFederationPlugin.ModuleFederationPluginOptions['exposes'],
+): void {
+  if (!exposes) {
+    return;
+  }
+
+  const checkKey = (key: string) => {
+    if (key !== '.' && !key.startsWith('./')) {
+      throw new Error(
+        `[ ModuleFederationPlugin ]: Invalid exposes key "${key}". ` +
+          "Exposes keys must be '.' or start with './'. Did you forget the './' prefix?",
+      );
+    }
+  };
+
+  const validateObjectKeys = (obj: Record<string, unknown>) => {
+    for (const key of Object.keys(obj)) {
+      checkKey(key);
+    }
+  };
+
+  if (Array.isArray(exposes)) {
+    for (const item of exposes as Array<unknown>) {
+      if (item && typeof item === 'object' && !Array.isArray(item)) {
+        validateObjectKeys(item as Record<string, unknown>);
+      }
+    }
+  } else if (typeof exposes === 'object') {
+    validateObjectKeys(exposes as Record<string, unknown>);
+  }
+}
+
 export class ModuleFederationPlugin implements RspackPluginInstance {
   readonly name = PLUGIN_NAME;
   private _options: moduleFederationPlugin.ModuleFederationPluginOptions;
   private _statsPlugin?: StatsPlugin;
 
   constructor(options: moduleFederationPlugin.ModuleFederationPluginOptions) {
+    validateExposesKeys(options.exposes);
     this._options = options;
   }
 

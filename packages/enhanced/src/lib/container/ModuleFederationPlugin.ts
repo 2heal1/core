@@ -48,6 +48,39 @@ const validate = createSchemaValidation(
   },
 );
 
+function validateExposesKeys(
+  exposes: moduleFederationPlugin.ModuleFederationPluginOptions['exposes'],
+): void {
+  if (!exposes) {
+    return;
+  }
+
+  const checkKey = (key: string) => {
+    if (key !== '.' && !key.startsWith('./')) {
+      throw new Error(
+        `[ ModuleFederationPlugin ]: Invalid exposes key "${key}". ` +
+          "Exposes keys must be '.' or start with './'. Did you forget the './' prefix?",
+      );
+    }
+  };
+
+  const validateObjectKeys = (obj: Record<string, unknown>) => {
+    for (const key of Object.keys(obj)) {
+      checkKey(key);
+    }
+  };
+
+  if (Array.isArray(exposes)) {
+    for (const item of exposes as Array<unknown>) {
+      if (item && typeof item === 'object' && !Array.isArray(item)) {
+        validateObjectKeys(item as Record<string, unknown>);
+      }
+    }
+  } else if (typeof exposes === 'object') {
+    validateObjectKeys(exposes as Record<string, unknown>);
+  }
+}
+
 function getEnhancedPackageVersion(): string {
   let currentDir = __dirname;
 
@@ -83,6 +116,7 @@ class ModuleFederationPlugin implements WebpackPluginInstance {
    */
   constructor(options: moduleFederationPlugin.ModuleFederationPluginOptions) {
     validate(options);
+    validateExposesKeys(options.exposes);
     this._options = options;
   }
 

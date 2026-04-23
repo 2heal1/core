@@ -1,4 +1,5 @@
 import {
+  ModuleFederationPlugin,
   resolveRspackRuntimeAlias,
   resolveRspackRuntimeImplementation,
 } from '../src/ModuleFederationPlugin';
@@ -64,6 +65,64 @@ describe('runtime resolution compatibility', () => {
 
     expect(resolveRspackRuntimeAlias('/legacy/runtime-tools', resolve)).toBe(
       '/legacy/runtime/dist/index.cjs',
+    );
+  });
+});
+
+
+describe('exposes key validation', () => {
+  it("allows '.' and './' prefixed exposes keys", () => {
+    expect(
+      () =>
+        new ModuleFederationPlugin({
+          name: 'container',
+          exposes: {
+            '.': './src/index',
+            './button': './src/button',
+          },
+        } as any),
+    ).not.toThrow();
+  });
+
+  it("throws helpful error when exposes key is missing './' prefix", () => {
+    expect(
+      () =>
+        new ModuleFederationPlugin({
+          name: 'container',
+          exposes: {
+            button: './src/button',
+          },
+        } as any),
+    ).toThrowError(
+      "[ ModuleFederationPlugin ]: Invalid exposes key \"button\". Exposes keys must be '.' or start with './'. Did you forget the './' prefix?",
+    );
+  });
+
+  it('validates exposes keys for array of objects form', () => {
+    expect(
+      () =>
+        new ModuleFederationPlugin({
+          name: 'container',
+          exposes: [
+            {
+              './button': './src/button',
+            },
+          ],
+        } as any),
+    ).not.toThrow();
+
+    expect(
+      () =>
+        new ModuleFederationPlugin({
+          name: 'container',
+          exposes: [
+            {
+              button: './src/button',
+            },
+          ],
+        } as any),
+    ).toThrowError(
+      "[ ModuleFederationPlugin ]: Invalid exposes key \"button\". Exposes keys must be '.' or start with './'. Did you forget the './' prefix?",
     );
   });
 });
