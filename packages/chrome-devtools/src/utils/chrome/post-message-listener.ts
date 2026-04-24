@@ -1,26 +1,6 @@
-import { sanitizePostMessagePayload } from './safe-post-message';
+const PLACEHOLDER_MESSAGE =
+  '[Module Federation Devtools] post-message listener has moved to @vmok/proxy-sdk. This file intentionally does nothing.';
 
-if (window.moduleHandler) {
-  window.removeEventListener('message', window.moduleHandler);
-} else {
-  window.moduleHandler = (event) => {
-    const { origin, data } = event;
-    if (!data.moduleInfo) {
-      return;
-    }
+console.info(PLACEHOLDER_MESSAGE);
 
-    chrome.runtime
-      .sendMessage({
-        origin,
-        data: sanitizePostMessagePayload({
-          moduleInfo: data.moduleInfo,
-          updateModule: data.updateModule,
-          share: data.share,
-        }),
-      })
-      .catch(() => {
-        return false;
-      });
-  };
-}
-window.addEventListener('message', window.moduleHandler);
+export {};

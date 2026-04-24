@@ -1,6 +1,6 @@
-import { getUrl } from './index';
+const PLACEHOLDER_MESSAGE =
+  '[Module Federation Devtools] post-message bootstrap has moved to @vmok/proxy-sdk. This file intentionally does nothing.';
 
-const postMessageUrl = getUrl('post-message.js');
-const script = document.createElement('script');
-script.src = postMessageUrl;
-document.getElementsByTagName('html')[0].appendChild(script);
+console.info(PLACEHOLDER_MESSAGE);
+
+export {};
