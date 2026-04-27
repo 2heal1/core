@@ -34,7 +34,7 @@ export const syncActiveTab = async (tabId?: number) => {
 
 export const refreshModuleInfo = async (..._args: any[]) => undefined;
 
-export const getModuleInfo = async (..._args: any[]) => ({
+export const getChromeModuleInfo = async (..._args: any[]) => ({
   message: PLACEHOLDER_MESSAGE,
   moduleInfo: {},
 });

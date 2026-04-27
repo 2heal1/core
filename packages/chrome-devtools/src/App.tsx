@@ -9,7 +9,7 @@ const PACKAGE_NAME = '@vmok/proxy-sdk';
 
 const iifeSnippet = `<script src="./iife.js"></script>
 <script>
-  window.VmokProxySdk.bootstrapFederationProxy({
+  window.VmokProxySdk.bootstrapProxy({
     data: {
       overrides: {
         '@demo/remote': 'http://localhost:3000/mf-manifest.json',
@@ -18,9 +18,9 @@ const iifeSnippet = `<script src="./iife.js"></script>
   });
 </script>`;
 
-const esmSnippet = `import { bootstrapFederationProxy } from '${PACKAGE_NAME}';
+const esmSnippet = `import { bootstrapProxy } from '${PACKAGE_NAME}';
 
-bootstrapFederationProxy({
+bootstrapProxy({
   data: {
     overrides: {
       '@demo/remote': 'http://localhost:3000/mf-manifest.json',
@@ -65,6 +65,7 @@ export default function App() {
       `取用压缩产物 ${IIFE_BUNDLE_PATH}，该产物已配置为 minify 且不输出 SourceMap。`,
       '将产物复制到当前 Chrome 插件可访问目录，或通过外部静态资源地址引入。',
       '按照下方 IIFE / ESM 示例执行初始化，替代仓库内原有 proxy/security 实现。',
+      '当前 security helper 默认禁用，待 allowlist / strictMode 配置补齐后再启用。',
     ],
     [],
   );
@@ -77,7 +78,8 @@ export default function App() {
         <p className={styles.description}>
           原有的 proxy / security 注入逻辑已经迁移到内部 Garfish 包
           <code>{PACKAGE_NAME}</code>。
-          当前仓库只保留一个干净的占位入口，用于指导你粘贴或引入构建后的压缩产物。
+          当前仓库只保留一个干净的占位入口，用于指导你粘贴或引入构建后的压缩产物；
+          security helper 现阶段默认禁用，待后续配置完成后再恢复。
         </p>
         <div className={styles.metaRow}>
           <span className={styles.metaItem}>目标包：{PACKAGE_NAME}</span>
@@ -124,7 +126,8 @@ export default function App() {
         <p>
           当前扩展不再内置任何 proxy / security 运行时代码，也不会自动注入
           <code>__FEDERATION__.__GLOBAL_PLUGIN__</code>。
-          若需要恢复相关能力，请仅通过外部引入的 {PACKAGE_NAME} 构建产物完成。
+          若需要恢复相关能力，请仅通过外部引入的 {PACKAGE_NAME} 构建产物完成，
+          并在补齐 allowlist / strictMode 配置后再启用 security helper。
         </p>
       </section>
     </main>

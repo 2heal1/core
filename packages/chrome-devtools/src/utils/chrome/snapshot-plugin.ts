@@ -1,14 +1,40 @@
-const PLACEHOLDER_MESSAGE =
-  '[Module Federation Devtools] Snapshot injection logic has moved to @vmok/proxy-sdk. This file is now a placeholder entry.';
+type RegisterProxyRuntimePlugins = (options?: {
+  includeOverridePlugin?: boolean;
+  includeSnapshotPlugin?: boolean;
+}) => unknown;
 
-export const attachExternalSnapshotBundle = (
-  register?: () => unknown,
-): string => {
+const PLACEHOLDER_MESSAGE =
+  '[Module Federation Devtools] Snapshot injection logic has moved to @vmok/proxy-sdk. Load the external proxy-sdk bundle before calling this entry.';
+
+const resolveRegisterProxyRuntimePlugins = (
+  register?: RegisterProxyRuntimePlugins,
+): RegisterProxyRuntimePlugins | undefined => {
   if (typeof register === 'function') {
-    register();
+    return register;
   }
 
-  return PLACEHOLDER_MESSAGE;
+  return (
+    globalThis as typeof globalThis & {
+      VmokProxySdk?: {
+        registerProxyRuntimePlugins?: RegisterProxyRuntimePlugins;
+      };
+    }
+  ).VmokProxySdk?.registerProxyRuntimePlugins;
 };
 
-console.info(PLACEHOLDER_MESSAGE);
+export const attachExternalSnapshotBundle = (
+  register?: RegisterProxyRuntimePlugins,
+) => {
+  const registerProxyRuntimePlugins =
+    resolveRegisterProxyRuntimePlugins(register);
+
+  if (typeof registerProxyRuntimePlugins === 'function') {
+    return registerProxyRuntimePlugins({
+      includeOverridePlugin: false,
+      includeSnapshotPlugin: true,
+    });
+  }
+
+  console.info(PLACEHOLDER_MESSAGE);
+  return PLACEHOLDER_MESSAGE;
+};

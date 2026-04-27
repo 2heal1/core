@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { moduleFederationPlugin, getProcessEnv } from '@module-federation/sdk';
+import { moduleFederationPlugin } from '@module-federation/sdk';
 import ansiColors from 'ansi-colors';
 import { Agent } from 'undici';
 import { retrieveRemoteConfig } from '../configurations/remotePlugin';
@@ -100,7 +100,7 @@ export const isTSProject = (
       filepath = path.resolve(context, filepath);
     }
     return fs.existsSync(filepath);
-  } catch (err) {
+  } catch {
     return false;
   }
 };
@@ -153,15 +153,11 @@ export function cloneDeepOptions<T extends DTSManagerOptions>(options: T): T {
 }
 
 const getEnvHeaders = (): Record<string, string> => {
-  const headersStr = getProcessEnv()['MF_ENV_HEADERS'];
-  if (!headersStr || headersStr === 'undefined') return {};
-  try {
-    return {
-      ...JSON.parse(headersStr),
-    };
-  } catch {
-    return {};
-  }
+  // Placeholder for external builds:
+  // Internal environments may inject authentication or proxy headers here.
+  // In the public repository we deliberately do not read any environment
+  // variables to avoid coupling to internal security configuration.
+  return {};
 };
 
 export type FetchRequestConfig = {
