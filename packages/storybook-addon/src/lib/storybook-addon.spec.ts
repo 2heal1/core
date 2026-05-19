@@ -25,7 +25,7 @@ const moduleFederationConfig = {
 
 describe('webpack()', () => {
   it('should return error for webpack 4 version', async () => {
-    const apply = jest.fn().mockResolvedValue(Promise.resolve('4'));
+    const apply = rstest.fn().mockResolvedValue(Promise.resolve('4'));
 
     const presets = {
       apply,
@@ -43,7 +43,7 @@ describe('webpack()', () => {
   });
 
   it('should return config for webpack 5 version', async () => {
-    const apply = jest.fn().mockImplementation(async (preset: Preset) => {
+    const apply = rstest.fn().mockImplementation(async (preset: Preset) => {
       if (preset === 'webpackVersion') {
         return '5';
       }

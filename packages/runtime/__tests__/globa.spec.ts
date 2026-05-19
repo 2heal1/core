@@ -1,9 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import { init } from '../src/index';
 
 describe('global', () => {
   it('inject mode', () => {
-    globalThis.__FEDERATION__.__DEBUG_CONSTRUCTOR__ = vi.fn() as any;
+    globalThis.__FEDERATION__.__DEBUG_CONSTRUCTOR__ = rstest.fn() as any;
     const injectArgs = {
       name: '@federation/inject-mode',
       remotes: [],

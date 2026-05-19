@@ -3,33 +3,33 @@
  * when there are circular dependencies in module loading
  */
 
-import { jest } from '@jest/globals';
+import { jest } from '@rstest/core';
 
 // Mock vm and fetch to simulate the error scenario
 const mockVm = {
-  Script: jest.fn(),
-  SourceTextModule: jest.fn(),
+  Script: rstest.fn(),
+  SourceTextModule: rstest.fn(),
   constants: {
     USE_MAIN_CONTEXT_DEFAULT_LOADER: undefined,
   },
 };
 
-const mockFetch = jest.fn();
+const mockFetch = rstest.fn();
 
 // Mock the modules that would be imported
-jest.mock('vm', () => mockVm, { virtual: true });
-jest.mock(
+rstest.mock('vm', () => mockVm, { virtual: true });
+rstest.mock(
   'path',
   () => ({
-    basename: jest.fn(),
-    join: jest.fn(),
+    basename: rstest.fn(),
+    join: rstest.fn(),
   }),
   { virtual: true },
 );
 
 describe('Node importNodeModule recursion test', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   it('should reproduce maximum call stack size exceeded', async () => {
@@ -39,7 +39,7 @@ describe('Node importNodeModule recursion test', () => {
 
     // Create a mock script that will trigger recursive importModuleDynamically calls
     const mockScript = {
-      runInThisContext: jest.fn(() => {
+      runInThisContext: rstest.fn(() => {
         return (
           exports: any,
           module: any,
@@ -103,14 +103,14 @@ describe('Node importNodeModule recursion test', () => {
     // Mock SourceTextModule for ESM loading test
     let linkCallCount = 0;
     const mockModule = {
-      link: jest.fn(async (linker) => {
+      link: rstest.fn(async (linker) => {
         linkCallCount++;
         if (linkCallCount < 5) {
           // Simulate circular dependency by calling linker with same module
           await linker('circular-esm-module');
         }
       }),
-      evaluate: jest.fn(),
+      evaluate: rstest.fn(),
     };
 
     mockVm.SourceTextModule.mockImplementation((code: string, options: any) => {

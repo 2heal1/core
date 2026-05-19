@@ -60,7 +60,7 @@ xdescribe('getRuntimeRemotes', () => {
   });
 
   test('console.warn should be called for unsupported types', () => {
-    console.warn = jest.fn();
+    console.warn = rstest.fn();
     // @ts-ignore
     remoteVars['unsupported'] = 42;
     // Call the function that triggers the warning message

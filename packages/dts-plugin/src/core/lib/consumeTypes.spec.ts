@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import { consumeTypes } from './consumeTypes';
 import { getDTSManagerConstructor } from './utils';
 import { DTSManagerOptions } from '../interfaces/DTSManagerOptions';
 
 // Mock the utils module
-vi.mock('./utils');
+rstest.mock('./utils');
 
 describe('consumeTypes', () => {
-  const mockConsumeTypes = vi.fn().mockResolvedValue(undefined);
+  const mockConsumeTypes = rstest.fn().mockResolvedValue(undefined);
 
   // Mock implementation of DTSManager
   class MockDTSManager {
@@ -18,7 +18,7 @@ describe('consumeTypes', () => {
   }
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    rstest.clearAllMocks();
     mockConsumeTypes.mockClear();
     (getDTSManagerConstructor as any).mockReturnValue(MockDTSManager);
   });

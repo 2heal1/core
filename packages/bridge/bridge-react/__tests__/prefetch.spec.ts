@@ -1,21 +1,22 @@
+import type { Mock } from '@rstest/core';
 import { prefetch } from '../src/lazy/data-fetch/prefetch';
 import * as utils from '../src/lazy/utils';
 import logger from '../src/lazy/logger';
 import helpers from '@module-federation/runtime/helpers';
 
 // Mock dependencies
-jest.mock('../src/lazy/logger');
-jest.mock('../src/lazy/utils');
-jest.mock('@module-federation/runtime/helpers', () => ({
+rstest.mock('../src/lazy/logger');
+rstest.mock('../src/lazy/utils');
+rstest.mock('@module-federation/runtime/helpers', () => ({
   default: {
     utils: {
-      matchRemoteWithNameAndExpose: jest.fn(),
-      getRemoteInfo: jest.fn(),
+      matchRemoteWithNameAndExpose: rstest.fn(),
+      getRemoteInfo: rstest.fn(),
     },
   },
   utils: {
-    matchRemoteWithNameAndExpose: jest.fn(),
-    getRemoteInfo: jest.fn(),
+    matchRemoteWithNameAndExpose: rstest.fn(),
+    getRemoteInfo: rstest.fn(),
   },
 }));
 
@@ -23,7 +24,7 @@ describe('prefetch', () => {
   let mockInstance: any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
     mockInstance = {
       name: 'host',
       options: {
@@ -37,13 +38,13 @@ describe('prefetch', () => {
         ],
       },
       snapshotHandler: {
-        loadRemoteSnapshotInfo: jest.fn(),
+        loadRemoteSnapshotInfo: rstest.fn(),
       },
       remoteHandler: {
         hooks: {
           lifecycle: {
             generatePreloadAssets: {
-              emit: jest.fn(),
+              emit: rstest.fn(),
             },
           },
         },
@@ -66,7 +67,7 @@ describe('prefetch', () => {
   });
 
   it('should log an error if remote is not found', async () => {
-    (helpers.utils.matchRemoteWithNameAndExpose as jest.Mock).mockReturnValue(
+    (helpers.utils.matchRemoteWithNameAndExpose as Mock).mockReturnValue(
       undefined,
     );
     await prefetch({ id: 'nonexistent/component', instance: mockInstance });
@@ -80,33 +81,33 @@ describe('prefetch', () => {
       remote: { name: 'remote1', alias: 'remote1_alias' },
       expose: './component1',
     };
-    (helpers.utils.matchRemoteWithNameAndExpose as jest.Mock).mockReturnValue(
+    (helpers.utils.matchRemoteWithNameAndExpose as Mock).mockReturnValue(
       mockRemoteInfo,
     );
     (
-      mockInstance.snapshotHandler.loadRemoteSnapshotInfo as jest.Mock
+      mockInstance.snapshotHandler.loadRemoteSnapshotInfo as Mock
     ).mockResolvedValue({
       remoteSnapshot: {},
       globalSnapshot: {},
     });
-    (helpers.utils.getRemoteInfo as jest.Mock).mockReturnValue({});
+    (helpers.utils.getRemoteInfo as Mock).mockReturnValue({});
 
-    const mockDataFetchFn = jest
+    const mockDataFetchFn = rstest
       .fn()
       .mockResolvedValue({ data: 'prefetched data' });
-    const mockGetDataFetchGetter = jest.fn().mockResolvedValue(mockDataFetchFn);
+    const mockGetDataFetchGetter = rstest.fn().mockResolvedValue(mockDataFetchFn);
     const mockDataFetchMap = {
       'remote1_alias@remote1/component1': [
         [mockGetDataFetchGetter, 'GET', undefined],
       ],
     };
-    (utils.getDataFetchMap as jest.Mock).mockReturnValue(mockDataFetchMap);
-    (utils.getDataFetchInfo as jest.Mock).mockReturnValue({
+    (utils.getDataFetchMap as Mock).mockReturnValue(mockDataFetchMap);
+    (utils.getDataFetchInfo as Mock).mockReturnValue({
       name: 'remote1',
       alias: 'remote1_alias',
       id: 'remote1/component1',
     });
-    (utils.getDataFetchMapKey as jest.Mock).mockReturnValue(
+    (utils.getDataFetchMapKey as Mock).mockReturnValue(
       'remote1_alias@remote1/component1',
     );
 
@@ -135,16 +136,16 @@ describe('prefetch', () => {
       remote: { name: 'remote1', alias: 'remote1_alias' },
       expose: './component1',
     };
-    (helpers.utils.matchRemoteWithNameAndExpose as jest.Mock).mockReturnValue(
+    (helpers.utils.matchRemoteWithNameAndExpose as Mock).mockReturnValue(
       mockRemoteInfo,
     );
     (
-      mockInstance.snapshotHandler.loadRemoteSnapshotInfo as jest.Mock
+      mockInstance.snapshotHandler.loadRemoteSnapshotInfo as Mock
     ).mockResolvedValue({
       remoteSnapshot: {},
       globalSnapshot: {},
     });
-    (utils.getDataFetchMap as jest.Mock).mockReturnValue(undefined);
+    (utils.getDataFetchMap as Mock).mockReturnValue(undefined);
 
     await prefetch({
       id: 'remote1/component1',

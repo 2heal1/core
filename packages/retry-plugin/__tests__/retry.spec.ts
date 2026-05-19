@@ -1,22 +1,22 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import { fetchRetry } from '../src/fetch-retry';
 import { scriptRetry } from '../src/script-retry';
 import { ERROR_ABANDONED, RUNTIME_008 } from '../src/constant';
 
-const mockFetch = vi.fn();
+const mockFetch = rstest.fn();
 global.fetch = mockFetch;
 
-vi.mock('../src/logger', () => ({
+rstest.mock('../src/logger', () => ({
   default: {
-    log: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
+    log: rstest.fn(),
+    warn: rstest.fn(),
+    error: rstest.fn(),
   },
 }));
 
 describe('Retry Plugin', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    rstest.clearAllMocks();
     mockFetch.mockClear();
   });
 
@@ -95,7 +95,7 @@ describe('Retry Plugin', () => {
     });
 
     it('should call onRetry callback', async () => {
-      const onRetry = vi.fn();
+      const onRetry = rstest.fn();
       mockFetch.mockRejectedValue(new Error('Network error'));
 
       await expect(
@@ -117,7 +117,7 @@ describe('Retry Plugin', () => {
     });
 
     it('should call onSuccess callback on retry success (not on first success)', async () => {
-      const onSuccess = vi.fn();
+      const onSuccess = rstest.fn();
       const mockResponse = {
         ok: true,
         json: () => Promise.resolve({ data: 'test' }),
@@ -147,7 +147,7 @@ describe('Retry Plugin', () => {
     });
 
     it('should call onError callback on final failure', async () => {
-      const onError = vi.fn();
+      const onError = rstest.fn();
       mockFetch.mockRejectedValue(new Error('Network error'));
 
       await expect(
@@ -236,9 +236,9 @@ describe('Retry Plugin', () => {
     });
 
     it('should call callbacks for script retry', async () => {
-      const onRetry = vi.fn();
-      const onSuccess = vi.fn();
-      const onError = vi.fn();
+      const onRetry = rstest.fn();
+      const onSuccess = rstest.fn();
+      const onError = rstest.fn();
       const mockRetryFn = vi
         .fn()
         .mockImplementationOnce(({ getEntryUrl }: any) => {
@@ -273,7 +273,7 @@ describe('Retry Plugin', () => {
         'http://localhost:2011',
         'http://localhost:2021',
       ];
-      const mockRetryFn = vi.fn().mockImplementation(({ getEntryUrl }: any) => {
+      const mockRetryFn = rstest.fn().mockImplementation(({ getEntryUrl }: any) => {
         // Consumer always calls getEntryUrl with the same original URL
         const nextUrl = getEntryUrl('http://localhost:2001/remoteEntry.js');
         sequence.push(nextUrl);
@@ -306,7 +306,7 @@ describe('Retry Plugin', () => {
 
     it('should append retryCount when addQuery is true for scripts', async () => {
       const sequence: string[] = [];
-      const mockRetryFn = vi.fn().mockImplementation(({ getEntryUrl }: any) => {
+      const mockRetryFn = rstest.fn().mockImplementation(({ getEntryUrl }: any) => {
         // Consumer always calls getEntryUrl with the same original URL
         const nextUrl = getEntryUrl('https://cdn-a.example.com/entry.js');
         sequence.push(nextUrl);
@@ -340,7 +340,7 @@ describe('Retry Plugin', () => {
 
     it('should prevent query parameter accumulation for scripts with functional addQuery', async () => {
       const sequence: string[] = [];
-      const mockRetryFn = vi.fn().mockImplementation(({ getEntryUrl }: any) => {
+      const mockRetryFn = rstest.fn().mockImplementation(({ getEntryUrl }: any) => {
         // Consumer always calls getEntryUrl with the same original URL
         const nextUrl = getEntryUrl('https://m1.example.com/remoteEntry.js');
         sequence.push(nextUrl);

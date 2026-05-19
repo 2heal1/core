@@ -1,19 +1,19 @@
 // Mock dependencies
-jest.mock('../src/attachShareScopeMap', () => ({
-  attachShareScopeMap: jest.fn(),
+rstest.mock('../src/attachShareScopeMap', () => ({
+  attachShareScopeMap: rstest.fn(),
 }));
 
-jest.mock('@module-federation/sdk', () => ({
-  decodeName: jest.fn((name) =>
+rstest.mock('@module-federation/sdk', () => ({
+  decodeName: rstest.fn((name) =>
     name.startsWith('encoded:') ? name.slice(8) : name,
   ),
   ENCODE_NAME_PREFIX: 'encoded:',
 }));
 
 // Mock the actual implementation of remotes
-jest.mock('../src/remotes', () => {
+rstest.mock('../src/remotes', () => {
   return {
-    remotes: jest.fn((options) => {
+    remotes: rstest.fn((options) => {
       // Call the real attachShareScopeMap
       const { attachShareScopeMap } = require('../src/attachShareScopeMap');
       attachShareScopeMap(options.webpackRequire);
@@ -66,7 +66,7 @@ import type { RemotesOptions } from '../src/types';
 
 describe('remotes', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   test('should call attachShareScopeMap with webpackRequire', () => {
@@ -100,7 +100,7 @@ describe('remotes', () => {
       idToExternalAndNameMapping: {},
       idToRemoteMap: {},
       webpackRequire: {
-        o: jest
+        o: rstest
           .fn()
           .mockImplementation((obj, key) =>
             Object.prototype.hasOwnProperty.call(obj, key),
@@ -134,7 +134,7 @@ describe('remotes', () => {
       },
       idToRemoteMap: {},
       webpackRequire: {
-        o: jest
+        o: rstest
           .fn()
           .mockImplementation((obj, key) =>
             Object.prototype.hasOwnProperty.call(obj, key),
@@ -173,7 +173,7 @@ describe('remotes', () => {
       },
       idToRemoteMap: {},
       webpackRequire: {
-        o: jest
+        o: rstest
           .fn()
           .mockImplementation((obj, key) =>
             Object.prototype.hasOwnProperty.call(obj, key),
@@ -213,7 +213,7 @@ describe('remotes', () => {
         ],
       },
       webpackRequire: {
-        o: jest
+        o: rstest
           .fn()
           .mockImplementation((obj, key) =>
             Object.prototype.hasOwnProperty.call(obj, key),

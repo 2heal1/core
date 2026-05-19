@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import { validateOptions } from '../../src/plugin/validate-options';
 
 function getValidConfig() {
@@ -25,7 +25,7 @@ function getValidConfig() {
 
 describe('validateOptions', () => {
   afterEach(() => {
-    vi.restoreAllMocks();
+    rstest.restoreAllMocks();
   });
 
   it('warns when unsupported options are configured', () => {

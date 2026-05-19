@@ -1,9 +1,10 @@
+import type { Mock } from '@rstest/core';
 import { initializeSharing } from '../src/initializeSharing';
 import { InitializeSharingOptions, WebpackRequire } from '../src/types';
 
 // Mock the attachShareScopeMap function
-jest.mock('../src/attachShareScopeMap', () => ({
-  attachShareScopeMap: jest.fn(),
+rstest.mock('../src/attachShareScopeMap', () => ({
+  attachShareScopeMap: rstest.fn(),
 }));
 
 // Helper functions to reduce repetition
@@ -14,7 +15,7 @@ jest.mock('../src/attachShareScopeMap', () => ({
 function createMockFederationInstance(options: Record<string, any> = {}) {
   return {
     name: 'test-app',
-    initializeSharing: jest.fn().mockReturnValue([]),
+    initializeSharing: rstest.fn().mockReturnValue([]),
     options: {
       shareStrategy: 'eager',
       ...options,
@@ -49,7 +50,7 @@ function createMockWebpackRequire(overrides: MockWebpackRequireOverrides = {}) {
       bundlerRuntimeOptions,
       ...overrides.federation,
     },
-    o: jest.fn(),
+    o: rstest.fn(),
     ...overrides,
   };
 }
@@ -81,11 +82,11 @@ function createMockOptions(
  * Helper for mocking console.warn during tests
  */
 function withMockedConsoleWarn(
-  testFn: (mockWarn: jest.Mock) => Promise<void> | void,
+  testFn: (mockWarn: Mock) => Promise<void> | void,
 ) {
   return async () => {
     const originalConsoleWarn = console.warn;
-    const mockConsoleWarn = jest.fn();
+    const mockConsoleWarn = rstest.fn();
     console.warn = mockConsoleWarn;
 
     try {
@@ -109,7 +110,7 @@ type ThenableModuleOptions = {
  */
 function createThenableModule({
   shouldResolve = true,
-  resolveValue = { init: jest.fn() },
+  resolveValue = { init: rstest.fn() },
   rejectValue = new Error('Thenable rejected'),
   thenImplementation,
   catchImplementation,
@@ -117,7 +118,7 @@ function createThenableModule({
   const result: any = {
     then:
       thenImplementation ||
-      jest.fn().mockImplementation((onSuccess, onError) => {
+      rstest.fn().mockImplementation((onSuccess, onError) => {
         if (shouldResolve) {
           onSuccess(resolveValue);
         } else if (onError) {
@@ -136,7 +137,7 @@ function createThenableModule({
 
 describe('initializeSharing', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   test('should handle circular init calls', async () => {
@@ -207,7 +208,7 @@ describe('initializeSharing', () => {
     // Setup
     const mockPromise = Promise.resolve();
     const federationInstance = createMockFederationInstance();
-    federationInstance.initializeSharing = jest
+    federationInstance.initializeSharing = rstest
       .fn()
       .mockReturnValue([mockPromise]);
 
@@ -264,7 +265,7 @@ describe('initializeSharing', () => {
 
   test('should initialize external modules that are not supported federation types', async () => {
     // Setup
-    const mockExternalModule = { init: jest.fn() };
+    const mockExternalModule = { init: rstest.fn() };
 
     // Create a mock webpackRequire with external module remotes
     const mockWebpackRequire = createMockWebpackRequire({
@@ -310,18 +311,18 @@ describe('initializeSharing', () => {
   test('should handle errors when initializing external module', async () => {
     return withMockedConsoleWarn(async (mockConsoleWarn) => {
       // Mock a module that throws an error when required
-      const mockRequire = jest.fn().mockImplementation((id) => {
+      const mockRequire = rstest.fn().mockImplementation((id) => {
         if (id === 'errorModule') {
           throw new Error('Module load error');
         }
         return {
-          init: jest.fn(),
+          init: rstest.fn(),
         };
       });
 
       // Create a federation instance and webpackRequire
       const federationInstance = createMockFederationInstance();
-      federationInstance.initializeSharing = jest.fn().mockReturnValue([]);
+      federationInstance.initializeSharing = rstest.fn().mockReturnValue([]);
 
       const mockWebpackRequire = createMockWebpackRequire({
         federationInstance: federationInstance,
@@ -377,10 +378,10 @@ describe('initializeSharing', () => {
         },
       });
 
-      const mockRequire = jest.fn().mockReturnValue(mockPromise);
+      const mockRequire = rstest.fn().mockReturnValue(mockPromise);
 
       const federationInstance = createMockFederationInstance();
-      federationInstance.initializeSharing = jest.fn().mockReturnValue([]);
+      federationInstance.initializeSharing = rstest.fn().mockReturnValue([]);
 
       const mockWebpackRequire = createMockWebpackRequire({
         federationInstance: federationInstance,
@@ -426,8 +427,8 @@ describe('initializeSharing', () => {
       // Create a thenable that will be returned by the module's init function
       const mockThenable = createThenableModule({
         shouldResolve: false,
-        thenImplementation: jest.fn(),
-        catchImplementation: jest.fn().mockImplementation((handler) => {
+        thenImplementation: rstest.fn(),
+        catchImplementation: rstest.fn().mockImplementation((handler) => {
           // Simulate a rejection that will be handled
           handler(new Error('Test error'));
           return Promise.resolve();
@@ -436,13 +437,13 @@ describe('initializeSharing', () => {
 
       // Create a module with an init function that returns our thenable
       const mockModule = {
-        init: jest.fn().mockReturnValue(mockThenable),
+        init: rstest.fn().mockReturnValue(mockThenable),
       };
 
       const federationInstance = createMockFederationInstance();
       // Mock the initializeSharing function to return a promises array
       const promises: any[] = [];
-      federationInstance.initializeSharing = jest
+      federationInstance.initializeSharing = rstest
         .fn()
         .mockImplementation(() => {
           return promises;
@@ -466,7 +467,7 @@ describe('initializeSharing', () => {
       });
 
       // Create a function that returns the module when called with the specific ID
-      const mockRequire = jest.fn((id) =>
+      const mockRequire = rstest.fn((id) =>
         id === 'thenableModule' ? mockModule : undefined,
       );
       Object.assign(mockRequire, mockWebpackRequire);
@@ -495,7 +496,7 @@ describe('initializeSharing', () => {
   test('should handle module without init function', async () => {
     // Setup - create a module with no init function
     const mockModule = {};
-    const mockRequire = jest.fn().mockReturnValue(mockModule);
+    const mockRequire = rstest.fn().mockReturnValue(mockModule);
 
     const mockWebpackRequire = createMockWebpackRequire({
       federation: {
@@ -531,9 +532,9 @@ describe('initializeSharing', () => {
 
   test('should handle non-thenable, non-boolean result from module init', async () => {
     // Setup
-    const mockInit = jest.fn().mockReturnValue('some-string'); // Not a boolean or thenable
+    const mockInit = rstest.fn().mockReturnValue('some-string'); // Not a boolean or thenable
     const mockModule = { init: mockInit };
-    const mockRequire = jest.fn().mockReturnValue(mockModule);
+    const mockRequire = rstest.fn().mockReturnValue(mockModule);
 
     const mockWebpackRequire = createMockWebpackRequire({
       federation: {
@@ -570,9 +571,9 @@ describe('initializeSharing', () => {
 
   test('should initialize multiple remotes of different types', async () => {
     // Setup
-    const mockInit = jest.fn();
+    const mockInit = rstest.fn();
     const mockModule = { init: mockInit };
-    const mockRequire = jest.fn().mockReturnValue(mockModule);
+    const mockRequire = rstest.fn().mockReturnValue(mockModule);
 
     const mockWebpackRequire = createMockWebpackRequire({
       federation: {
@@ -644,12 +645,12 @@ describe('initializeSharing', () => {
     return withMockedConsoleWarn(async (mockConsoleWarn) => {
       // Mock a module that returns undefined when required
       const nonExistentModuleId = 'module-does-not-exist';
-      const mockRequire = jest.fn().mockImplementation((id) => {
+      const mockRequire = rstest.fn().mockImplementation((id) => {
         if (id === nonExistentModuleId) {
           return undefined; // Return undefined for this module
         }
         return {
-          init: jest.fn(),
+          init: rstest.fn(),
         };
       });
 
@@ -692,7 +693,7 @@ describe('initializeSharing', () => {
     return withMockedConsoleWarn(async (mockConsoleWarn) => {
       // Create a module with a then method
       const moduleValue = {
-        init: jest.fn(),
+        init: rstest.fn(),
       };
       const moduleWithThen = createThenableModule({
         shouldResolve: true,
@@ -716,7 +717,7 @@ describe('initializeSharing', () => {
       });
 
       // Create a function that returns the module when called with the specific ID
-      const mockRequire = jest.fn((id) =>
+      const mockRequire = rstest.fn((id) =>
         id === 'thenModule' ? moduleWithThen : undefined,
       );
       Object.assign(mockRequire, mockWebpackRequire);
@@ -747,8 +748,8 @@ describe('initializeSharing', () => {
       // Create a thenable module
       const mockThenable = createThenableModule({
         shouldResolve: false,
-        thenImplementation: jest.fn(),
-        catchImplementation: jest.fn().mockImplementation((handler) => {
+        thenImplementation: rstest.fn(),
+        catchImplementation: rstest.fn().mockImplementation((handler) => {
           // Simulate a rejection that will be handled
           handler(new Error('Test error'));
           return Promise.resolve();
@@ -757,13 +758,13 @@ describe('initializeSharing', () => {
 
       // Create a module with an init function that returns our thenable
       const mockModule = {
-        init: jest.fn().mockReturnValue(mockThenable),
+        init: rstest.fn().mockReturnValue(mockThenable),
       };
 
       // Create federation instance with custom initializeSharing
       const federationInstance = createMockFederationInstance();
       const promises: any[] = [];
-      federationInstance.initializeSharing = jest
+      federationInstance.initializeSharing = rstest
         .fn()
         .mockImplementation(() => {
           return promises;
@@ -787,7 +788,7 @@ describe('initializeSharing', () => {
       });
 
       // Create a function that returns the module when called with the specific ID
-      const mockRequire = jest.fn((id) =>
+      const mockRequire = rstest.fn((id) =>
         id === 'resolvingModule' ? mockModule : undefined,
       );
       Object.assign(mockRequire, mockWebpackRequire);
@@ -830,7 +831,7 @@ describe('initializeSharing', () => {
       // Create federation instance with custom initializeSharing
       const federationInstance = createMockFederationInstance();
       const promises: any[] = [];
-      federationInstance.initializeSharing = jest
+      federationInstance.initializeSharing = rstest
         .fn()
         .mockImplementation(() => {
           return promises;
@@ -854,7 +855,7 @@ describe('initializeSharing', () => {
       });
 
       // Create a function that returns the module when called with the specific ID
-      const mockRequire = jest.fn((id) =>
+      const mockRequire = rstest.fn((id) =>
         id === 'rejectingModule' ? moduleWithRejectingThen : undefined,
       );
       Object.assign(mockRequire, mockWebpackRequire);
@@ -885,7 +886,7 @@ describe('initializeSharing', () => {
     // Create a mock federation instance
     const federationInstance = createMockFederationInstance({
       name: 'test-app',
-      initializeSharing: jest.fn().mockReturnValue([]),
+      initializeSharing: rstest.fn().mockReturnValue([]),
     });
 
     // Create a mock webpackRequire
@@ -935,7 +936,7 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockImplementation(() => {
+    federationInstance.initializeSharing = rstest.fn().mockImplementation(() => {
       return promises;
     });
 
@@ -958,7 +959,7 @@ describe('initializeSharing', () => {
     });
 
     // Create a function that returns the module when called with the specific ID
-    const mockRequire = jest.fn((id) =>
+    const mockRequire = rstest.fn((id) =>
       id === 'noInitModule' ? moduleWithoutInit : undefined,
     );
     Object.assign(mockRequire, mockWebpackRequire);
@@ -985,7 +986,7 @@ describe('initializeSharing', () => {
   test('should handle init function returning non-thenable result', async () => {
     // Create a module with init that returns a non-thenable, non-boolean value
     const moduleWithNonThenableInit = {
-      init: jest.fn().mockImplementation(() => {
+      init: rstest.fn().mockImplementation(() => {
         return 'string result'; // Neither boolean nor thenable
       }),
     };
@@ -995,7 +996,7 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockImplementation(() => {
+    federationInstance.initializeSharing = rstest.fn().mockImplementation(() => {
       return promises;
     });
 
@@ -1018,7 +1019,7 @@ describe('initializeSharing', () => {
     });
 
     // Create a function that returns the module when called with the specific ID
-    const mockRequire = jest.fn((id) =>
+    const mockRequire = rstest.fn((id) =>
       id === 'nonThenableModule' ? moduleWithNonThenableInit : undefined,
     );
     Object.assign(mockRequire, mockWebpackRequire);
@@ -1049,7 +1050,7 @@ describe('initializeSharing', () => {
     // Create federation instance with a name
     const federationInstance = createMockFederationInstance({
       name: 'test-app',
-      initializeSharing: jest.fn().mockReturnValue([]),
+      initializeSharing: rstest.fn().mockReturnValue([]),
     });
 
     // Create a mock webpackRequire with properly structured bundlerRuntimeOptions
@@ -1090,7 +1091,7 @@ describe('initializeSharing', () => {
 
     // Create a module with init that returns a thenable with catch
     const moduleWithThenableCatchInit = {
-      init: jest.fn().mockImplementation(() => {
+      init: rstest.fn().mockImplementation(() => {
         return mockThenableWithCatch;
       }),
     };
@@ -1100,12 +1101,12 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockImplementation(() => {
+    federationInstance.initializeSharing = rstest.fn().mockImplementation(() => {
       return promises;
     });
 
     // Spy on the promise.catch method
-    const catchSpy = jest.spyOn(mockThenableWithCatch, 'catch');
+    const catchSpy = rstest.spyOn(mockThenableWithCatch, 'catch');
 
     // Create a mock webpackRequire
     const mockWebpackRequire = createMockWebpackRequire({
@@ -1126,7 +1127,7 @@ describe('initializeSharing', () => {
     });
 
     // Create a function that returns the module when called with the specific ID
-    const mockRequire = jest.fn((id) =>
+    const mockRequire = rstest.fn((id) =>
       id === 'thenableCatchModule' ? moduleWithThenableCatchInit : undefined,
     );
     Object.assign(mockRequire, mockWebpackRequire);
@@ -1178,8 +1179,8 @@ describe('initializeSharing', () => {
   test('should handle module with then method that returns a promise', async () => {
     // Create a module with a then method that returns a promise
     const mockModule = {
-      then: jest.fn().mockImplementation((onFulfilled) => {
-        onFulfilled({ init: jest.fn() });
+      then: rstest.fn().mockImplementation((onFulfilled) => {
+        onFulfilled({ init: rstest.fn() });
         return Promise.resolve();
       }),
     };
@@ -1189,7 +1190,7 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockReturnValue(promises);
+    federationInstance.initializeSharing = rstest.fn().mockReturnValue(promises);
 
     // Create a mock webpackRequire
     const mockWebpackRequire = createMockWebpackRequire({
@@ -1210,7 +1211,7 @@ describe('initializeSharing', () => {
     });
 
     // Mock the require function to return the module with then
-    const mockRequire = jest.fn((id) =>
+    const mockRequire = rstest.fn((id) =>
       id === 'then-module' ? mockModule : undefined,
     );
     Object.assign(mockRequire, mockWebpackRequire);
@@ -1241,13 +1242,13 @@ describe('initializeSharing', () => {
   test('should handle init function returning a thenable', async () => {
     // Create a thenable result from init
     const mockThenable = {
-      then: jest.fn(),
-      catch: jest.fn(),
+      then: rstest.fn(),
+      catch: rstest.fn(),
     };
 
     // Create a module with init that returns a thenable
     const mockModule = {
-      init: jest.fn().mockReturnValue(mockThenable),
+      init: rstest.fn().mockReturnValue(mockThenable),
     };
 
     // Create federation instance
@@ -1255,7 +1256,7 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockReturnValue(promises);
+    federationInstance.initializeSharing = rstest.fn().mockReturnValue(promises);
 
     // Create a mock webpackRequire
     const mockWebpackRequire = createMockWebpackRequire({
@@ -1276,7 +1277,7 @@ describe('initializeSharing', () => {
     });
 
     // Mock the require function to return the module
-    const mockRequire = jest.fn((id) =>
+    const mockRequire = rstest.fn((id) =>
       id === 'thenable-module' ? mockModule : undefined,
     );
     Object.assign(mockRequire, mockWebpackRequire);
@@ -1355,13 +1356,13 @@ describe('initializeSharing', () => {
     return withMockedConsoleWarn(async (mockConsoleWarn) => {
       // Create a thenable result from init without a catch method
       const mockThenable = {
-        then: jest.fn(),
+        then: rstest.fn(),
         // No catch method
       };
 
       // Create a module with init that returns a thenable without catch
       const mockModule = {
-        init: jest.fn().mockReturnValue(mockThenable),
+        init: rstest.fn().mockReturnValue(mockThenable),
       };
 
       // Create federation instance
@@ -1369,7 +1370,7 @@ describe('initializeSharing', () => {
         name: 'test-app',
       });
       const promises: any[] = [];
-      federationInstance.initializeSharing = jest
+      federationInstance.initializeSharing = rstest
         .fn()
         .mockReturnValue(promises);
 
@@ -1396,7 +1397,7 @@ describe('initializeSharing', () => {
       });
 
       // Mock the require function to return the module
-      const mockRequire = jest.fn((id) =>
+      const mockRequire = rstest.fn((id) =>
         id === 'thenable-no-catch-module' ? mockModule : undefined,
       );
       Object.assign(mockRequire, mockWebpackRequire);
@@ -1435,7 +1436,7 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockReturnValue(promises);
+    federationInstance.initializeSharing = rstest.fn().mockReturnValue(promises);
 
     // Create a mock webpackRequire
     const mockWebpackRequire = createMockWebpackRequire({
@@ -1456,7 +1457,7 @@ describe('initializeSharing', () => {
     });
 
     // Mock the require function to return undefined
-    const mockRequire = jest.fn((id) => undefined);
+    const mockRequire = rstest.fn((id) => undefined);
     Object.assign(mockRequire, mockWebpackRequire);
     (mockRequire as any).S = { default: {} };
 
@@ -1485,7 +1486,7 @@ describe('initializeSharing', () => {
   test('should handle init function returning a non-thenable value', async () => {
     // Create a module with init that returns a non-thenable value
     const mockModule = {
-      init: jest.fn().mockReturnValue(42), // Not a thenable, not a boolean
+      init: rstest.fn().mockReturnValue(42), // Not a thenable, not a boolean
     };
 
     // Create federation instance
@@ -1493,7 +1494,7 @@ describe('initializeSharing', () => {
       name: 'test-app',
     });
     const promises: any[] = [];
-    federationInstance.initializeSharing = jest.fn().mockReturnValue(promises);
+    federationInstance.initializeSharing = rstest.fn().mockReturnValue(promises);
 
     // Create a mock webpackRequire
     const mockWebpackRequire = createMockWebpackRequire({
@@ -1514,7 +1515,7 @@ describe('initializeSharing', () => {
     });
 
     // Mock the require function to return the module
-    const mockRequire = jest.fn((id) =>
+    const mockRequire = rstest.fn((id) =>
       id === 'non-thenable-module' ? mockModule : undefined,
     );
     Object.assign(mockRequire, mockWebpackRequire);
@@ -1546,7 +1547,7 @@ describe('initializeSharing', () => {
     // Create federation instance with a name and mocked initializeSharing
     const federationInstance = createMockFederationInstance({
       name: 'test-app',
-      initializeSharing: jest.fn().mockReturnValue([]),
+      initializeSharing: rstest.fn().mockReturnValue([]),
     });
 
     // Create a mock webpackRequire
@@ -1608,7 +1609,7 @@ describe('initializeSharing', () => {
       federation: {
         instance: {
           name: 'test-app',
-          initializeSharing: jest.fn().mockReturnValue([]),
+          initializeSharing: rstest.fn().mockReturnValue([]),
           options: { shareStrategy: 'eager' },
         },
         bundlerRuntimeOptions: {

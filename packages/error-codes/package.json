@@ -76,8 +76,8 @@
   "scripts": {
     "build": "tsdown --config tsdown.config.ts --filter error-codes-build",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules \"**/*.ts\" \"package.json\"",
-    "test": "pnpm exec jest --config jest.config.js --passWithNoTests",
-    "test:ci": "pnpm exec jest --config jest.config.js --passWithNoTests --ci --coverage",
+    "test": "rstest run",
+    "test:ci": "rstest run --coverage",
     "pre-release": "pnpm run test && pnpm run build"
   }
 }

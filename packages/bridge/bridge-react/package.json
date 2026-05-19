@@ -134,7 +134,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "pnpm exec jest --config jest.config.ts --passWithNoTests"
+    "test": "rstest run"
   },
   "dependencies": {
     "@module-federation/sdk": "workspace:*",

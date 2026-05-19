@@ -1,5 +1,5 @@
 import { ChildProcess } from 'child_process';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { rstest } from '@rstest/core';
 import { randomUUID } from 'crypto';
 
 import { RpcExitError, wrapRpc, RpcMessage, RpcGMCallTypes } from './index';
@@ -21,7 +21,7 @@ describe('wrapRpc', () => {
     childProcessMock = {
       connected: true,
       pid: 1234,
-      send: vi.spyOn(mockChildProcessFn, 'send'),
+      send: rstest.spyOn(mockChildProcessFn, 'send'),
       on: vi
         .fn()
         .mockImplementation(
@@ -64,7 +64,7 @@ describe('wrapRpc', () => {
             );
           },
         ),
-      kill: vi.fn().mockImplementation((signal?: NodeJS.Signals | number) => {
+      kill: rstest.fn().mockImplementation((signal?: NodeJS.Signals | number) => {
         const handlerName = 'close';
         if (!eventHandlers[handlerName]) {
           return;

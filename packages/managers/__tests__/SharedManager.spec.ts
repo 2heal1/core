@@ -1,7 +1,7 @@
 import { SharedManager } from '../src/SharedManager';
 
 // Mock the findPkg method to return stable values
-const mockFindPkg = jest.fn().mockImplementation((name: string) => {
+const mockFindPkg = rstest.fn().mockImplementation((name: string) => {
   // Return stable package versions to avoid dependency pollution in CI/local
   const mockPackages: Record<string, any> = {
     react: { version: '18.2.0' },
@@ -16,8 +16,8 @@ const mockFindPkg = jest.fn().mockImplementation((name: string) => {
 });
 
 // Mock the SharedManager class to override findPkg method
-jest.mock('../src/SharedManager', () => {
-  const actual = jest.requireActual('../src/SharedManager');
+rstest.mock('../src/SharedManager', () => {
+  const actual = rstest.requireActual('../src/SharedManager');
   return {
     SharedManager: class extends actual.SharedManager {
       findPkg = mockFindPkg;

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { rstest } from '@rstest/core';
 import { join } from 'path';
 import dirTree from 'directory-tree';
 import { execSync } from 'child_process';
@@ -271,25 +271,25 @@ describe('DtsWorker Unit Tests', () => {
   };
 
   beforeEach(() => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    rstest.spyOn(console, 'error').mockImplementation(() => {});
     originalKill = process.kill;
     originalDebugMode = isDebugMode;
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     DtsWorkerClass = require('../../../dist/core').DtsWorker;
     // Reset isDebugMode for each test
-    vi.mock('./utils', () => ({
+    rstest.mock('./utils', () => ({
       isDebugMode: () => false,
       cloneDeepOptions: (options: any) => JSON.parse(JSON.stringify(options)),
     }));
     // Mock logger
-    vi.mock('../../server', () => ({
+    rstest.mock('../../server', () => ({
       logger: {
-        error: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
-        debug: vi.fn(),
+        error: rstest.fn(),
+        info: rstest.fn(),
+        warn: rstest.fn(),
+        debug: rstest.fn(),
       },
-      fileLog: vi.fn(),
+      fileLog: rstest.fn(),
     }));
   });
 
@@ -303,8 +303,8 @@ describe('DtsWorker Unit Tests', () => {
       dtsWorker = null;
     }
     process.kill = originalKill;
-    vi.restoreAllMocks();
-    vi.resetModules();
+    rstest.restoreAllMocks();
+    rstest.resetModules();
   });
 
   describe('initialization', () => {
@@ -328,7 +328,7 @@ describe('DtsWorker Unit Tests', () => {
         },
       };
 
-      vi.mock('./utils', () => ({
+      rstest.mock('./utils', () => ({
         isDebugMode: () => false,
         cloneDeepOptions: (options: any) => {
           const cloned = JSON.parse(JSON.stringify(options));
@@ -361,10 +361,10 @@ describe('DtsWorker Unit Tests', () => {
     });
 
     it('should ensure child process exits even when promise rejects', async () => {
-      vi.mock('../rpc/index', () => ({
+      rstest.mock('../rpc/index', () => ({
         createRpcWorker: () => ({
           connect: () => Promise.resolve(),
-          terminate: vi.fn(),
+          terminate: rstest.fn(),
           process: {
             pid: process.pid,
             connected: true,
@@ -384,15 +384,15 @@ describe('DtsWorker Unit Tests', () => {
 
   describe('debug mode handling', () => {
     it('should log errors in debug mode', async () => {
-      vi.mock('./utils', () => ({
+      rstest.mock('./utils', () => ({
         isDebugMode: () => true,
         cloneDeepOptions: (options: any) => JSON.parse(JSON.stringify(options)),
       }));
 
-      vi.mock('../rpc/index', () => ({
+      rstest.mock('../rpc/index', () => ({
         createRpcWorker: () => ({
           connect: () => Promise.resolve(),
-          terminate: vi.fn(),
+          terminate: rstest.fn(),
           process: {
             pid: process.pid,
             connected: true,
@@ -403,7 +403,7 @@ describe('DtsWorker Unit Tests', () => {
         }),
       }));
 
-      const consoleSpy = vi.spyOn(console, 'error');
+      const consoleSpy = rstest.spyOn(console, 'error');
       dtsWorker = new DtsWorkerClass(mockOptions);
       dtsWorker._res = Promise.reject(new Error('Test error'));
 
@@ -412,15 +412,15 @@ describe('DtsWorker Unit Tests', () => {
     });
 
     it('should not log errors when not in debug mode', async () => {
-      vi.mock('./utils', () => ({
+      rstest.mock('./utils', () => ({
         isDebugMode: () => false,
         cloneDeepOptions: (options: any) => JSON.parse(JSON.stringify(options)),
       }));
 
-      vi.mock('../rpc/index', () => ({
+      rstest.mock('../rpc/index', () => ({
         createRpcWorker: () => ({
           connect: () => Promise.resolve(),
-          terminate: vi.fn(),
+          terminate: rstest.fn(),
           process: {
             pid: process.pid,
             connected: true,
@@ -431,11 +431,11 @@ describe('DtsWorker Unit Tests', () => {
         }),
       }));
 
-      const consoleSpy = vi.spyOn(console, 'error');
+      const consoleSpy = rstest.spyOn(console, 'error');
       dtsWorker = new DtsWorkerClass(mockOptions);
 
       // Mock process.kill to not throw
-      process.kill = vi.fn();
+      process.kill = rstest.fn();
 
       // Mock the promise to resolve normally
       dtsWorker._res = Promise.resolve();

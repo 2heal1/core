@@ -3,11 +3,11 @@ import { removeUnnecessarySharedKeys } from './remove-unnecessary-shared-keys';
 
 describe('removeUnnecessarySharedKeys', () => {
   beforeEach(() => {
-    jest.spyOn(logger, 'warn').mockImplementation(jest.fn());
+    rstest.spyOn(logger, 'warn').mockImplementation(rstest.fn());
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    rstest.restoreAllMocks();
   });
 
   it('should remove unnecessary shared keys from the given object', () => {

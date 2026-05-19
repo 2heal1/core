@@ -2,7 +2,7 @@ import { correctImportPath } from './correctImportPath.js';
 
 describe(`${correctImportPath.name}()`, () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   it.each(['linux', undefined])(

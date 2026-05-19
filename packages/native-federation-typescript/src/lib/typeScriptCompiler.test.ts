@@ -2,7 +2,6 @@ import dirTree from 'directory-tree';
 import { mkdtempSync, rmSync } from 'fs';
 import os from 'os';
 import { join, sep } from 'path';
-import { afterEach, describe, expect, it } from 'vitest';
 
 import { RemoteOptions } from '../interfaces/RemoteOptions';
 import {

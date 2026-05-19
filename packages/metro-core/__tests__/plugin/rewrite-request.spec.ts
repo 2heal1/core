@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { createRewriteRequest } from '../../src/plugin/rewrite-request';
 
 describe('createRewriteRequest', () => {

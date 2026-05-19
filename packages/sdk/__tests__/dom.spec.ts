@@ -7,7 +7,7 @@ describe('createScript', () => {
 
   it('should create a new script element if one does not exist', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const { script, needAttach } = createScript({ url, cb });
 
     expect(script.tagName).toBe('SCRIPT');
@@ -17,7 +17,7 @@ describe('createScript', () => {
 
   it('should reuse an existing script element if one exists', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     document.body.innerHTML = `<script src="${url}"></script>`;
     const { script, needAttach } = createScript({ url, cb });
 
@@ -28,7 +28,7 @@ describe('createScript', () => {
 
   it('should set attributes on the script element', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const attrs = { async: true, 'data-test': 'test' };
     const { script } = createScript({ url, cb, attrs });
 
@@ -38,7 +38,7 @@ describe('createScript', () => {
 
   it('should call the callback when the script loads', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const { script, needAttach } = createScript({ url, cb });
 
     if (needAttach) {
@@ -50,10 +50,10 @@ describe('createScript', () => {
   });
 
   it('should call onErrorCallback (not cb) when the script times out', () => {
-    jest.useFakeTimers();
+    rstest.useFakeTimers();
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     createScript({
       url,
       cb,
@@ -62,25 +62,25 @@ describe('createScript', () => {
       createScriptHook: () => ({ timeout: 100 }),
     });
 
-    jest.advanceTimersByTime(100);
+    rstest.advanceTimersByTime(100);
 
     expect(onErrorCallback).toHaveBeenCalledTimes(1);
     expect(cb).not.toHaveBeenCalled();
-    jest.useRealTimers();
+    rstest.useRealTimers();
   });
 
   describe('Timeout', () => {
     beforeEach(() => {
-      jest.spyOn(global, 'setTimeout');
-      jest.spyOn(global, 'clearTimeout'); // Add this line
+      rstest.spyOn(global, 'setTimeout');
+      rstest.spyOn(global, 'clearTimeout'); // Add this line
     });
 
     afterEach(() => {
-      jest.restoreAllMocks();
+      rstest.restoreAllMocks();
     });
     it('should use the default timeout of 20000ms if no timeout is specified', () => {
       const url = 'https://example.com/script.js';
-      const cb = jest.fn();
+      const cb = rstest.fn();
       const { script } = createScript({ url, cb });
 
       expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 20000);
@@ -88,7 +88,7 @@ describe('createScript', () => {
 
     it('should use the timeout specified in the createScriptHook', () => {
       const url = 'https://example.com/script.js';
-      const cb = jest.fn();
+      const cb = rstest.fn();
       const customTimeout = 5000;
       createScript({
         url,
@@ -105,7 +105,7 @@ describe('createScript', () => {
 
     it('should clear the timeout when the script loads successfully', () => {
       const url = 'https://example.com/script.js';
-      const cb = jest.fn();
+      const cb = rstest.fn();
       const { script, needAttach } = createScript({ url, cb });
 
       if (needAttach) {
@@ -118,7 +118,7 @@ describe('createScript', () => {
 
     it('should clear the timeout when the script fails to load', () => {
       const url = 'https://example.com/script.js';
-      const cb = jest.fn();
+      const cb = rstest.fn();
       const { script, needAttach } = createScript({ url, cb });
 
       if (needAttach) {
@@ -132,7 +132,7 @@ describe('createScript', () => {
     it('should set section attributes on the script element', () => {
       const url = 'https://example.com/script.js';
       const scriptHookUrl = 'https://example.com/hook-script.js';
-      const cb = jest.fn();
+      const cb = rstest.fn();
       const attrs = {
         async: true,
         'data-test': 'test',
@@ -163,13 +163,13 @@ describe('createScript', () => {
 describe('createScript - error handling', () => {
   afterEach(() => {
     document.getElementsByTagName('html')[0].innerHTML = '';
-    jest.restoreAllMocks();
+    rstest.restoreAllMocks();
   });
 
   it('onerror calls onErrorCallback with a ScriptNetworkError', () => {
     const url = 'https://example.com/network-error.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     const { script, needAttach } = createScript({ url, cb, onErrorCallback });
 
     if (needAttach) document.body.appendChild(script);
@@ -186,8 +186,8 @@ describe('createScript - error handling', () => {
 
   it('window ErrorEvent with matching filename calls onErrorCallback with ScriptExecutionError and does not call cb', () => {
     const url = 'https://example.com/exec-error.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     const { script, needAttach } = createScript({ url, cb, onErrorCallback });
 
     if (needAttach) document.body.appendChild(script);
@@ -218,8 +218,8 @@ describe('createScript - error handling', () => {
   it('window ErrorEvent from a different url does not trigger onErrorCallback', () => {
     const url = 'https://example.com/my-script.js';
     const otherUrl = 'https://example.com/other-script.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     const { script, needAttach } = createScript({ url, cb, onErrorCallback });
 
     if (needAttach) document.body.appendChild(script);
@@ -242,8 +242,8 @@ describe('createScript - error handling', () => {
 
   it('window error listener is removed after onload fires', () => {
     const url = 'https://example.com/remove-on-load.js';
-    const cb = jest.fn();
-    const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+    const cb = rstest.fn();
+    const removeEventListenerSpy = rstest.spyOn(window, 'removeEventListener');
     const { script, needAttach } = createScript({ url, cb });
 
     if (needAttach) document.body.appendChild(script);
@@ -256,10 +256,10 @@ describe('createScript - error handling', () => {
   });
 
   it('timeout calls onErrorCallback with ScriptNetworkError containing "timed out"', () => {
-    jest.useFakeTimers();
+    rstest.useFakeTimers();
     const url = 'https://example.com/timeout-error.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     createScript({
       url,
       cb,
@@ -268,7 +268,7 @@ describe('createScript - error handling', () => {
       createScriptHook: () => ({ timeout: 500 }),
     });
 
-    jest.advanceTimersByTime(500);
+    rstest.advanceTimersByTime(500);
 
     expect(onErrorCallback).toHaveBeenCalledTimes(1);
     const err = onErrorCallback.mock.calls[0][0] as Error;
@@ -277,15 +277,15 @@ describe('createScript - error handling', () => {
     expect(err.message).toContain(url);
     expect(err.message).toContain('timed out');
     expect(cb).not.toHaveBeenCalled();
-    jest.useRealTimers();
+    rstest.useRealTimers();
   });
 
   it('timeout removes window error listener', () => {
-    jest.useFakeTimers();
+    rstest.useFakeTimers();
     const url = 'https://example.com/timeout-cleanup.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
-    const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
+    const removeEventListenerSpy = rstest.spyOn(window, 'removeEventListener');
     createScript({
       url,
       cb,
@@ -294,20 +294,20 @@ describe('createScript - error handling', () => {
       createScriptHook: () => ({ timeout: 100 }),
     });
 
-    jest.advanceTimersByTime(100);
+    rstest.advanceTimersByTime(100);
 
     expect(removeEventListenerSpy).toHaveBeenCalledWith(
       'error',
       expect.any(Function),
     );
-    jest.useRealTimers();
+    rstest.useRealTimers();
   });
 
   it('onload after timeout does not call cb or onErrorCallback again', () => {
-    jest.useFakeTimers();
+    rstest.useFakeTimers();
     const url = 'https://example.com/late-load.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     const { script, needAttach } = createScript({
       url,
       cb,
@@ -317,7 +317,7 @@ describe('createScript - error handling', () => {
     });
     if (needAttach) document.body.appendChild(script);
 
-    jest.advanceTimersByTime(100);
+    rstest.advanceTimersByTime(100);
     expect(onErrorCallback).toHaveBeenCalledTimes(1);
 
     // onload fires late (after timeout already cleared script.onload)
@@ -325,14 +325,14 @@ describe('createScript - error handling', () => {
 
     expect(cb).not.toHaveBeenCalled();
     expect(onErrorCallback).toHaveBeenCalledTimes(1);
-    jest.useRealTimers();
+    rstest.useRealTimers();
   });
 
   it('window error listener is removed after onerror fires', () => {
     const url = 'https://example.com/remove-on-error.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
-    const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
+    const removeEventListenerSpy = rstest.spyOn(window, 'removeEventListener');
     const { script, needAttach } = createScript({ url, cb, onErrorCallback });
 
     if (needAttach) document.body.appendChild(script);
@@ -352,7 +352,7 @@ describe('createLink', () => {
 
   it('should create a new link element if one does not exist', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const { link, needAttach } = createLink({
       url,
       cb,
@@ -367,7 +367,7 @@ describe('createLink', () => {
 
   xit('should reuse an existing link element if one exists', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     document.head.innerHTML = `<link href="${url}" rel="preload" as="script">`;
     const { link, needAttach } = createLink({
       url,
@@ -385,7 +385,7 @@ describe('createLink', () => {
 
   it('should set attributes on the link element', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const attrs = { rel: 'preload', as: 'script', 'data-test': 'test' };
     const { link } = createLink({ url, cb, attrs });
 
@@ -396,7 +396,7 @@ describe('createLink', () => {
 
   it('should set section attributes on the link element', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const attrs = {
       rel: 'preload',
       as: 'script',
@@ -424,7 +424,7 @@ describe('createLink', () => {
 
   it('should call the callback when the link loads', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const { link, needAttach } = createLink({
       url,
       cb,
@@ -441,8 +441,8 @@ describe('createLink', () => {
 
   it('should call the callback when the link fails to load', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
-    const onErrorCallback = jest.fn();
+    const cb = rstest.fn();
+    const onErrorCallback = rstest.fn();
     const { link, needAttach } = createLink({
       url,
       cb,
@@ -459,7 +459,7 @@ describe('createLink', () => {
 
   it('should use the link element returned by createLinkHook', () => {
     const url = 'https://example.com/script.js';
-    const cb = jest.fn();
+    const cb = rstest.fn();
     const customLink = document.createElement('link');
     customLink.href = url;
     customLink.rel = 'preload';

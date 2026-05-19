@@ -1,30 +1,30 @@
 // We need to mock the modules before importing anything else
-jest.mock('@module-federation/runtime', () => ({
-  init: jest.fn(),
+rstest.mock('@module-federation/runtime', () => ({
+  init: rstest.fn(),
 }));
 
-jest.mock('../src/remotes', () => ({
-  remotes: jest.fn(),
+rstest.mock('../src/remotes', () => ({
+  remotes: rstest.fn(),
 }));
 
-jest.mock('../src/consumes', () => ({
-  consumes: jest.fn(),
+rstest.mock('../src/consumes', () => ({
+  consumes: rstest.fn(),
 }));
 
-jest.mock('../src/initializeSharing', () => ({
-  initializeSharing: jest.fn(),
+rstest.mock('../src/initializeSharing', () => ({
+  initializeSharing: rstest.fn(),
 }));
 
-jest.mock('../src/installInitialConsumes', () => ({
-  installInitialConsumes: jest.fn(),
+rstest.mock('../src/installInitialConsumes', () => ({
+  installInitialConsumes: rstest.fn(),
 }));
 
-jest.mock('../src/attachShareScopeMap', () => ({
-  attachShareScopeMap: jest.fn(),
+rstest.mock('../src/attachShareScopeMap', () => ({
+  attachShareScopeMap: rstest.fn(),
 }));
 
-jest.mock('../src/initContainerEntry', () => ({
-  initContainerEntry: jest.fn(),
+rstest.mock('../src/initContainerEntry', () => ({
+  initContainerEntry: rstest.fn(),
 }));
 
 // Now we can import our module

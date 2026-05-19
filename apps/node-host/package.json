@@ -15,7 +15,7 @@
     "serve:development": "pnpm --filter node-host run build:development && node dist/main.js",
     "serve:production": "pnpm --filter node-host run build:production && node dist/main.js",
     "lint": "ESLINT_USE_FLAT_CONFIG=false pnpm exec eslint --ignore-pattern node_modules **/*.ts",
-    "test": "pnpm exec jest --config jest.config.ts --passWithNoTests",
-    "test:ci": "pnpm exec jest --config jest.config.ts --passWithNoTests --ci --coverage"
+    "test": "rstest",
+    "test:ci": "rstest --coverage"
   }
 }

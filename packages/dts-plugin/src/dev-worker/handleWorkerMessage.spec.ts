@@ -1,15 +1,15 @@
-import { describe, expect, it, vi, afterEach } from 'vitest';
+import { rstest } from '@rstest/core';
 
 import { RpcGMCallTypes } from '../core/rpc/types';
 import { handleDevWorkerMessage } from './handleWorkerMessage';
 
 describe('handleDevWorkerMessage', () => {
   afterEach(() => {
-    vi.restoreAllMocks();
+    rstest.restoreAllMocks();
   });
 
   it('does not throw when EXIT arrives before module server is initialized', () => {
-    const processExit = vi.fn();
+    const processExit = rstest.fn();
 
     expect(() =>
       handleDevWorkerMessage(
@@ -17,7 +17,7 @@ describe('handleDevWorkerMessage', () => {
           type: RpcGMCallTypes.EXIT,
           id: 'exit-before-init',
         },
-        { processExit, log: vi.fn() },
+        { processExit, log: rstest.fn() },
       ),
     ).not.toThrow();
 
@@ -25,9 +25,9 @@ describe('handleDevWorkerMessage', () => {
   });
 
   it('calls module server exit when present', () => {
-    const processExit = vi.fn();
+    const processExit = rstest.fn();
     const moduleServer = {
-      exit: vi.fn(),
+      exit: rstest.fn(),
     };
 
     handleDevWorkerMessage(
@@ -35,7 +35,7 @@ describe('handleDevWorkerMessage', () => {
         type: RpcGMCallTypes.EXIT,
         id: 'exit-with-server',
       },
-      { moduleServer, processExit, log: vi.fn() },
+      { moduleServer, processExit, log: rstest.fn() },
     );
 
     expect(moduleServer.exit).toHaveBeenCalledTimes(1);
@@ -43,9 +43,9 @@ describe('handleDevWorkerMessage', () => {
   });
 
   it('ignores non-exit messages', () => {
-    const processExit = vi.fn();
+    const processExit = rstest.fn();
     const moduleServer = {
-      exit: vi.fn(),
+      exit: rstest.fn(),
     };
 
     handleDevWorkerMessage(
@@ -54,7 +54,7 @@ describe('handleDevWorkerMessage', () => {
         id: 'message',
         args: [],
       },
-      { moduleServer, processExit, log: vi.fn() },
+      { moduleServer, processExit, log: rstest.fn() },
     );
 
     expect(moduleServer.exit).not.toHaveBeenCalled();

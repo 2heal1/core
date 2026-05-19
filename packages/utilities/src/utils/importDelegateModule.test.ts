@@ -1,24 +1,25 @@
+import type { Mock } from '@rstest/core';
 import { importDelegatedModule } from './importDelegatedModule';
 import { loadScript } from './pure';
 
-jest.mock('./pure');
+rstest.mock('./pure');
 describe('importDelegatedModule', () => {
-  let mockLoadScript: jest.Mock;
-  let mockRuntimeRemote: { get: jest.Mock; init: jest.Mock };
+  let mockLoadScript: Mock;
+  let mockRuntimeRemote: { get: Mock; init: Mock };
 
   beforeEach(() => {
-    mockLoadScript = jest.fn();
+    mockLoadScript = rstest.fn();
     mockRuntimeRemote = {
-      get: jest.fn(),
-      init: jest.fn(),
+      get: rstest.fn(),
+      init: rstest.fn(),
     };
-    (loadScript as jest.Mock).mockImplementation(() =>
+    (loadScript as Mock).mockImplementation(() =>
       Promise.resolve(mockRuntimeRemote),
     );
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    rstest.resetAllMocks();
   });
 
   it('should successfully import a delegated module', async () => {

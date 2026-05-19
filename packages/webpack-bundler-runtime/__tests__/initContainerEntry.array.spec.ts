@@ -1,3 +1,4 @@
+import type { Mock } from '@rstest/core';
 import { initContainerEntry } from '../src/initContainerEntry';
 import type { InitContainerEntryOptions, WebpackRequire } from '../src/types';
 import type { RemoteEntryInitOptions } from '@module-federation/runtime/types';
@@ -9,8 +10,8 @@ import type { RemoteEntryInitOptions } from '@module-federation/runtime/types';
  */
 function createMockFederationInstance(overrides: Record<string, any> = {}) {
   return {
-    initOptions: jest.fn(),
-    initShareScopeMap: jest.fn(),
+    initOptions: rstest.fn(),
+    initShareScopeMap: rstest.fn(),
     ...overrides,
   };
 }
@@ -31,7 +32,7 @@ function createMockFederation(overrides: FederationOverrides = {}) {
       name: 'test-app',
       ...(overrides.initOptions || {}),
     },
-    attachShareScopeMap: jest.fn(),
+    attachShareScopeMap: rstest.fn(),
     ...overrides,
   };
 }
@@ -39,7 +40,7 @@ function createMockFederation(overrides: FederationOverrides = {}) {
 type WebpackRequireOverrides = {
   S?: any;
   federation?: any;
-  I?: jest.Mock;
+  I?: Mock;
   [key: string]: any;
 };
 
@@ -52,7 +53,7 @@ function createMockWebpackRequire(
   return {
     S: overrides.S === undefined ? {} : overrides.S,
     federation: overrides.federation || createMockFederation(),
-    I: overrides.I || jest.fn(),
+    I: overrides.I || rstest.fn(),
     ...overrides,
   } as any;
 }
@@ -103,7 +104,7 @@ function createMockRemoteEntryInitOptions(
 describe('initContainerEntry with array-based share scopes', () => {
   test('should initialize container entry with array shareScopeKey', async () => {
     // Setup
-    const mockIFunction = jest.fn().mockResolvedValue(true);
+    const mockIFunction = rstest.fn().mockResolvedValue(true);
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -141,7 +142,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should initialize container entry with array shareScopeKey and no shared option', async () => {
     // Setup
-    const mockIFunction = jest.fn().mockResolvedValue(true);
+    const mockIFunction = rstest.fn().mockResolvedValue(true);
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -179,7 +180,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle host array shareScopeKeys with remote string shareScopeKey', () => {
     // Setup
-    const mockIFunction = jest.fn();
+    const mockIFunction = rstest.fn();
     const remoteEntryInitOptions = createMockRemoteEntryInitOptions({
       version: '1.0.0',
       shareScopeMap: { default: {}, scope1: {} },
@@ -225,7 +226,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle host string shareScopeKey with remote array shareScopeKey', () => {
     // Setup
-    const mockIFunction = jest.fn();
+    const mockIFunction = rstest.fn();
     const remoteEntryInitOptions: RemoteEntryInitOptions = {
       version: '1.0.0',
       shareScopeMap: { default: {} },
@@ -236,13 +237,13 @@ describe('initContainerEntry with array-based share scopes', () => {
         S: {},
         federation: {
           instance: {
-            initOptions: jest.fn(),
-            initShareScopeMap: jest.fn(),
+            initOptions: rstest.fn(),
+            initShareScopeMap: rstest.fn(),
           },
           initOptions: {
             name: 'test-app',
           },
-          attachShareScopeMap: jest.fn(),
+          attachShareScopeMap: rstest.fn(),
         },
         I: mockIFunction,
       } as any,
@@ -282,7 +283,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle array shareScopeKey without hostShareScopeKeys', () => {
     // Mock setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
 
     // No hostShareScopeKeys or hostShareScopeMap in remoteEntryInitOptions
     const remoteEntryInitOptions = createMockRemoteEntryInitOptions({
@@ -328,7 +329,7 @@ describe('initContainerEntry with array-based share scopes', () => {
   test('should handle array shareScopeKey with proxyInitializeSharing=true', () => {
     // Mock setup
     const mockPromise = Promise.resolve(true);
-    const mockIFunction = jest.fn().mockReturnValue(mockPromise);
+    const mockIFunction = rstest.fn().mockReturnValue(mockPromise);
 
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
@@ -355,7 +356,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle array shareScopeKey with non-array hostShareScopeKeys', () => {
     // Mock setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -391,7 +392,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle array shareScopeKey with defined hostShareScopeMap but undefined hostShareScopeKeys', () => {
     // Mock setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const hostShareScopeMap = { key1: {}, key2: {} };
 
     const mockOptions = createMockOptions({
@@ -431,7 +432,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should behave differently for proxyInitializeSharing=false vs true with array shareScopeKey', () => {
     // Mock setup for shared=false (proxyInitializeSharing=false)
-    const mockIFunctionFalse = jest.fn().mockImplementation((key) => {
+    const mockIFunctionFalse = rstest.fn().mockImplementation((key) => {
       return Promise.resolve(true);
     });
 
@@ -459,7 +460,7 @@ describe('initContainerEntry with array-based share scopes', () => {
     expect(mockIFunctionFalse).toHaveBeenCalledTimes(2);
 
     // Mock setup for shared=true (proxyInitializeSharing=true)
-    const mockIFunctionTrue = jest
+    const mockIFunctionTrue = rstest
       .fn()
       .mockReturnValue(Promise.resolve('success'));
 
@@ -491,7 +492,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle proxyInitializeSharing=false with array shareScopeKey', async () => {
     // Setup with shared: false (making proxyInitializeSharing false)
-    const mockIFunction = jest.fn().mockImplementation((key) => {
+    const mockIFunction = rstest.fn().mockImplementation((key) => {
       return Promise.resolve(true);
     });
 
@@ -524,7 +525,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should pass array shareScopeKey directly to I when proxyInitializeSharing is true', () => {
     // Mock setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve('success'));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve('success'));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -555,7 +556,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle null hostShareScopeMap with array shareScopeKey', () => {
     // Mock setup with null hostShareScopeMap
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -593,7 +594,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle array shareScopeKey when both hostShareScopeKeys and hostShareScopeMap are undefined', () => {
     // Setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -630,7 +631,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should directly map each shareScopeKey when proxyInitializeSharing is false', async () => {
     // Setup with shared: false (making proxyInitializeSharing false)
-    const mockIFunction = jest.fn().mockImplementation((key) => {
+    const mockIFunction = rstest.fn().mockImplementation((key) => {
       // Return different promises for different keys to ensure we're resolving properly
       if (key === 'key1') return Promise.resolve('result1');
       if (key === 'key2') return Promise.resolve('result2');
@@ -666,7 +667,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle when webpackRequire.federation.attachShareScopeMap is not defined', () => {
     // Setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -695,7 +696,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle array shareScopeKey when hostShareScopeKeys is defined but hostShareScopeMap is undefined', () => {
     // Setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -738,7 +739,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle array shareScopeKey when hostShareScopeMap is defined but hostShareScopeKeys is undefined', () => {
     // Setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -789,7 +790,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should execute without attachShareScopeMap function', () => {
     // Setup
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
     const mockOptions = createMockOptions({
       webpackRequire: {
         S: {},
@@ -820,7 +821,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should use proxyInitializeSharing=true with array shareScopeKey directly calling I once', () => {
     // Setup with explicit shared=true to make proxyInitializeSharing true
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve('results'));
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve('results'));
     const mockOptions = createMockOptions({
       webpackRequire: createMockWebpackRequire({
         I: mockIFunction,
@@ -849,7 +850,7 @@ describe('initContainerEntry with array-based share scopes', () => {
 
   test('should handle Promise.all mapping with proxyInitializeSharing=false with array shareScopeKey', async () => {
     // Setup with shared=false to ensure proxyInitializeSharing is false
-    const mockIFunction = jest.fn();
+    const mockIFunction = rstest.fn();
     mockIFunction.mockImplementation((key) => {
       if (key === 'key1') return Promise.resolve('result1');
       if (key === 'key2') return Promise.resolve('result2');
@@ -886,22 +887,22 @@ describe('initContainerEntry with array-based share scopes', () => {
   // Additional test to specifically cover line 62 with a more precise setup
   test('should enter the early return in shareScopeKey.forEach when hostShareScopeKeys is null', () => {
     // Mock setup
-    const mockInitShareScopeMap = jest.fn();
-    const mockIFunction = jest.fn().mockReturnValue(Promise.resolve(true));
+    const mockInitShareScopeMap = rstest.fn();
+    const mockIFunction = rstest.fn().mockReturnValue(Promise.resolve(true));
 
     // Create a custom mock to force the specific condition
     const mockWebpackRequire = {
       S: {},
       federation: {
         instance: {
-          initOptions: jest.fn(),
+          initOptions: rstest.fn(),
           initShareScopeMap: mockInitShareScopeMap,
         },
         initOptions: {
           name: 'test-app',
           shared: false,
         },
-        attachShareScopeMap: jest.fn(),
+        attachShareScopeMap: rstest.fn(),
       },
       I: mockIFunction,
     } as any;
@@ -944,15 +945,15 @@ describe('initContainerEntry with array-based share scopes', () => {
       S: {},
       federation: {
         instance: {
-          initOptions: jest.fn(),
-          initShareScopeMap: jest.fn(),
+          initOptions: rstest.fn(),
+          initShareScopeMap: rstest.fn(),
         },
         initOptions: {
           name: 'test-app',
         },
         // Specifically don't include attachShareScopeMap
       },
-      I: jest.fn(),
+      I: rstest.fn(),
     } as any;
 
     // Execute - using any to bypass type checking for this test
@@ -966,7 +967,7 @@ describe('initContainerEntry with array-based share scopes', () => {
   // Specific test to cover lines 91-102
   test('should cover proxyInitializeSharing determination and branching', () => {
     // Setup 1: With shared=true for proxyInitializeSharing=true
-    const mockIFunction1 = jest
+    const mockIFunction1 = rstest
       .fn()
       .mockReturnValue(Promise.resolve('direct result'));
 
@@ -975,14 +976,14 @@ describe('initContainerEntry with array-based share scopes', () => {
         S: {},
         federation: {
           instance: {
-            initOptions: jest.fn(),
-            initShareScopeMap: jest.fn(),
+            initOptions: rstest.fn(),
+            initShareScopeMap: rstest.fn(),
           },
           initOptions: {
             name: 'test-app',
             shared: true, // This will make proxyInitializeSharing true
           },
-          attachShareScopeMap: jest.fn(),
+          attachShareScopeMap: rstest.fn(),
         },
         I: mockIFunction1,
       } as any,
@@ -1002,7 +1003,7 @@ describe('initContainerEntry with array-based share scopes', () => {
     // For test purposes, we just check that the mock was called correctly
 
     // Setup 2: With shared=false for proxyInitializeSharing=false
-    const mockIFunction2 = jest.fn().mockImplementation((key) => {
+    const mockIFunction2 = rstest.fn().mockImplementation((key) => {
       return Promise.resolve(key === 'key1' ? 'result1' : 'result2');
     });
 
@@ -1011,14 +1012,14 @@ describe('initContainerEntry with array-based share scopes', () => {
         S: {},
         federation: {
           instance: {
-            initOptions: jest.fn(),
-            initShareScopeMap: jest.fn(),
+            initOptions: rstest.fn(),
+            initShareScopeMap: rstest.fn(),
           },
           initOptions: {
             name: 'test-app',
             shared: false, // This will make proxyInitializeSharing false
           },
-          attachShareScopeMap: jest.fn(),
+          attachShareScopeMap: rstest.fn(),
         },
         I: mockIFunction2,
       } as any,
@@ -1051,7 +1052,7 @@ describe('initContainerEntry with array-based share scopes', () => {
   // Additional test to cover lines 106-107
   test('should map array shareScopeKey elements to calls to I function', async () => {
     // Setup with custom return values to verify Promise.all behavior
-    const mockIFunction = jest.fn();
+    const mockIFunction = rstest.fn();
     mockIFunction.mockImplementation((key) => {
       // Return different promises for different keys
       if (key === 'key1') return Promise.resolve('value1');
@@ -1065,14 +1066,14 @@ describe('initContainerEntry with array-based share scopes', () => {
         S: {},
         federation: {
           instance: {
-            initOptions: jest.fn(),
-            initShareScopeMap: jest.fn(),
+            initOptions: rstest.fn(),
+            initShareScopeMap: rstest.fn(),
           },
           initOptions: {
             name: 'test-app',
             shared: false, // Ensure Promise.all path is taken
           },
-          attachShareScopeMap: jest.fn(),
+          attachShareScopeMap: rstest.fn(),
         },
         I: mockIFunction,
       } as any,

@@ -1,20 +1,21 @@
+import type { Mock } from '@rstest/core';
 import { getResourceUrl } from '../src/utils';
 import { ModuleInfo } from '../src/types';
 import * as env from '../src/env';
 
-jest.mock('../src/env', () => {
+rstest.mock('../src/env', () => {
   const mock = {
     isBrowserEnvValue: false,
-    isBrowserEnv: jest.fn(() => mock.isBrowserEnvValue),
-    isReactNativeEnv: jest.fn(),
+    isBrowserEnv: rstest.fn(() => mock.isBrowserEnvValue),
+    isReactNativeEnv: rstest.fn(),
   };
   return mock;
 });
 
 const mockedEnv = env as unknown as {
   isBrowserEnvValue: boolean;
-  isBrowserEnv: jest.Mock;
-  isReactNativeEnv: jest.Mock;
+  isBrowserEnv: Mock;
+  isReactNativeEnv: Mock;
 };
 
 describe('getResourceUrl', () => {
@@ -71,7 +72,7 @@ describe('getResourceUrl', () => {
 
   test('should log warning and return empty string when no public path info', () => {
     module = {} as ModuleInfo;
-    const consoleWarnSpy = jest.spyOn(console, 'warn');
+    const consoleWarnSpy = rstest.spyOn(console, 'warn');
     const result = getResourceUrl(module, sourceUrl);
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       'Cannot get resource URL. If in debug mode, please ignore.',

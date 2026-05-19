@@ -2,8 +2,8 @@ import { attachShareScopeMap } from '../src/attachShareScopeMap';
 import type { WebpackRequire } from '../src/types';
 
 // We need to mock the implementation to control the behavior
-jest.mock('../src/attachShareScopeMap', () => ({
-  attachShareScopeMap: jest.fn((webpackRequire) => {
+rstest.mock('../src/attachShareScopeMap', () => ({
+  attachShareScopeMap: rstest.fn((webpackRequire) => {
     // Simplified implementation for testing
     if (
       webpackRequire.S ||
@@ -50,7 +50,7 @@ class MockWebpackRequire implements Partial<WebpackRequire> {
 
 describe('attachShareScopeMap', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   test('should not modify when S is already defined', () => {

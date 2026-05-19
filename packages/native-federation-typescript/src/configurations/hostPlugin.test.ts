@@ -1,5 +1,3 @@
-import { describe, expect, it } from 'vitest';
-
 import { retrieveHostConfig } from './hostPlugin';
 
 describe('hostPlugin', () => {

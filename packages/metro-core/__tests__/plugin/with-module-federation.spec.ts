@@ -1,14 +1,14 @@
 import path from 'node:path';
 import { vol } from 'memfs';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 
-vi.mock('node:fs', () => {
+rstest.mock('node:fs', () => {
   const memfs = require('memfs').fs;
   return { ...memfs, default: memfs };
 });
 
-vi.mock('../../src/plugin/babel-transformer', () => ({
-  createBabelTransformer: vi.fn(
+rstest.mock('../../src/plugin/babel-transformer', () => ({
+  createBabelTransformer: rstest.fn(
     ({ tmpDirPath }: { tmpDirPath: string }) =>
       `${tmpDirPath}/babel-transformer.js`,
   ),
@@ -60,8 +60,8 @@ function createMetroConfig(projectRoot: string) {
   return {
     projectRoot,
     serializer: {
-      getModulesRunBeforeMainModule: vi.fn(() => []),
-      getPolyfills: vi.fn(() => []),
+      getModulesRunBeforeMainModule: rstest.fn(() => []),
+      getPolyfills: rstest.fn(() => []),
     },
     transformer: {
       babelTransformerPath: path.join(projectRoot, 'babel-transformer.js'),
@@ -85,7 +85,7 @@ describe('withModuleFederation', () => {
     delete (global as any).__METRO_FEDERATION_REMOTE_ENTRY_PATH;
     delete (global as any).__METRO_FEDERATION_MANIFEST_PATH;
     vol.reset();
-    vi.restoreAllMocks();
+    rstest.restoreAllMocks();
   });
 
   it('uses runtimePlugins in normalized federation config', () => {

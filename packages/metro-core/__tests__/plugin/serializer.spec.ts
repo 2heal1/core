@@ -1,13 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import { ConfigError } from '../../src/utils/errors';
 
-vi.mock('../../src/utils/metro-compat', () => {
-  const baseJSBundle = vi.fn(() => ({ mocked: true }));
+rstest.mock('../../src/utils/metro-compat', () => {
+  const baseJSBundle = rstest.fn(() => ({ mocked: true }));
 
   return {
     CountingSet: class CountingSet<T> extends Set<T> {},
     baseJSBundle,
-    bundleToString: vi.fn(() => ({ code: 'serialized-output' })),
+    bundleToString: rstest.fn(() => ({ code: 'serialized-output' })),
   };
 });
 
@@ -45,7 +45,7 @@ function createGraph() {
 
 describe('getModuleFederationSerializer', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   it('matches expose paths when the entry path contains backslashes', async () => {
@@ -92,7 +92,7 @@ describe('getModuleFederationSerializer', () => {
     ).resolves.toBe('serialized-output');
     expect(baseJSBundle).toHaveBeenCalledTimes(1);
 
-    const preModules = vi.mocked(baseJSBundle).mock.calls[0][1] as any[];
+    const preModules = rstest.mocked(baseJSBundle).mock.calls[0][1] as any[];
     expect(preModules[0].output[0].data.code).toContain('["exposed/tsx"]');
     expect(preModules[1].output[0].data.code).toContain('["exposed/tsx"]');
   });

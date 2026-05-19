@@ -2,7 +2,7 @@ import AdmZip from 'adm-zip';
 import dirTree from 'directory-tree';
 import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
-import { describe, expect, it, vi, beforeAll } from 'vitest';
+import { rstest } from '@rstest/core';
 import { DTSManager } from './DTSManager';
 import { UpdateMode } from '../../server/constant';
 import * as utils from './utils';
@@ -326,7 +326,7 @@ describe('DTSManager', () => {
       const distFolder = join(projectRoot, TEST_DIT_DIR, typesFolder);
       const zip = new AdmZip();
       zip.addLocalFolder(distFolder);
-      vi.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
+      rstest.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
         data: zip.toBuffer(),
         status: 200,
         headers: {},
@@ -341,7 +341,7 @@ describe('DTSManager', () => {
     });
 
     it('no delete exist remote types if fetch new remote types failed', async () => {
-      vi.spyOn(utils, 'nativeFetch').mockRejectedValueOnce(new Error('error'));
+      rstest.spyOn(utils, 'nativeFetch').mockRejectedValueOnce(new Error('error'));
       await dtsManager.consumeTypes();
       expect(
         dirTree(targetFolder, {
@@ -496,7 +496,7 @@ describe('DTSManager', () => {
     const distFolder = join(projectRoot, TEST_DIT_DIR, typesFolder);
     const zip = new AdmZip();
     zip.addLocalFolder(distFolder);
-    vi.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
+    rstest.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
       data: zip.toBuffer(),
       status: 200,
       headers: {},

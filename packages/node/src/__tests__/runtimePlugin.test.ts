@@ -1,3 +1,4 @@
+import type { Mock } from '@rstest/core';
 import runtimePlugin, {
   importNodeModule,
   resolveFile,
@@ -26,14 +27,14 @@ declare global {
   }
 }
 
-jest.mock('fs', () => ({
-  existsSync: jest.fn(),
-  readFile: jest.fn(),
+rstest.mock('fs', () => ({
+  existsSync: rstest.fn(),
+  readFile: rstest.fn(),
 }));
 
-jest.mock('vm', () => ({
-  Script: jest.fn().mockImplementation(() => ({
-    runInThisContext: jest.fn().mockReturnValue(() => {
+rstest.mock('vm', () => ({
+  Script: rstest.fn().mockImplementation(() => ({
+    runInThisContext: rstest.fn().mockReturnValue(() => {
       return undefined;
     }),
   })),
@@ -42,24 +43,24 @@ jest.mock('vm', () => ({
   },
 }));
 
-global.fetch = jest.fn().mockResolvedValue({
-  text: jest.fn().mockResolvedValue('// mock chunk content'),
+global.fetch = rstest.fn().mockResolvedValue({
+  text: rstest.fn().mockResolvedValue('// mock chunk content'),
 });
 
 const mockWebpackRequire = {
-  u: jest.fn((chunkId: string) => `/chunks/${chunkId}.js`),
+  u: rstest.fn((chunkId: string) => `/chunks/${chunkId}.js`),
   p: 'http://localhost:3000/',
   m: {},
-  o: jest.fn(),
-  l: jest.fn(),
+  o: rstest.fn(),
+  l: rstest.fn(),
   federation: {
     runtime: {
-      loadScriptNode: jest.fn().mockResolvedValue({}),
+      loadScriptNode: rstest.fn().mockResolvedValue({}),
     },
     instance: {
-      initRawContainer: jest.fn().mockReturnValue({}),
+      initRawContainer: rstest.fn().mockReturnValue({}),
     },
-    chunkMatcher: jest.fn().mockReturnValue(true),
+    chunkMatcher: rstest.fn().mockReturnValue(true),
     rootOutputDir: '/dist',
     initOptions: {
       name: 'test-host',
@@ -69,12 +70,12 @@ const mockWebpackRequire = {
     },
   },
   f: {
-    require: jest.fn(),
-    readFileVm: jest.fn(),
+    require: rstest.fn(),
+    readFileVm: rstest.fn(),
   },
 };
 
-const mockNonWebpackRequire = jest.fn().mockImplementation((id: string) => {
+const mockNonWebpackRequire = rstest.fn().mockImplementation((id: string) => {
   if (id === 'path') return require('path');
   if (id === 'fs') return require('fs');
   if (id === 'vm') return require('vm');
@@ -129,7 +130,7 @@ describe('runtimePlugin', () => {
   let plugin: ModuleFederationRuntimePlugin;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
     plugin = runtimePlugin();
   });
 
@@ -139,7 +140,7 @@ describe('runtimePlugin', () => {
 
     beforeEach(() => {
       originalFunction = global.Function;
-      console.error = jest.fn();
+      console.error = rstest.fn();
       // Clear the import cache to ensure fresh tests
       nodeRuntimeImportCache.clear();
     });
@@ -164,12 +165,12 @@ describe('runtimePlugin', () => {
 
     it('should successfully import a module', async () => {
       // Use a more targeted approach to mock just the specific Function call
-      const mockImport = jest
+      const mockImport = rstest
         .fn()
         .mockResolvedValue({ default: 'mocked module' });
 
       // Only mock the specific instance rather than the entire Function constructor
-      jest
+      rstest
         .spyOn(global, 'Function')
         .mockImplementation((name, body) =>
           name === 'name' && body === 'return import(name)'
@@ -183,10 +184,10 @@ describe('runtimePlugin', () => {
 
     it('should handle import errors', async () => {
       const mockError = new Error('Import failed');
-      const mockImport = jest.fn().mockRejectedValue(mockError);
+      const mockImport = rstest.fn().mockRejectedValue(mockError);
 
       // Only mock the specific instance rather than the entire Function constructor
-      jest
+      rstest
         .spyOn(global, 'Function')
         .mockImplementation((name, body) =>
           name === 'name' && body === 'return import(name)'
@@ -205,7 +206,7 @@ describe('runtimePlugin', () => {
     it('should correctly resolve a file path from rootOutputDir and chunkId', () => {
       const path = require('path');
       const originalJoin = path.join;
-      path.join = jest
+      path.join = rstest
         .fn()
         .mockReturnValue('/resolved/path/chunks/test-chunk.js');
 
@@ -247,12 +248,12 @@ describe('runtimePlugin', () => {
 
   describe('loadFromFs', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      rstest.clearAllMocks();
       require('fs').existsSync.mockReturnValue(false);
     });
 
     it('should check if file exists', () => {
-      const callback = jest.fn();
+      const callback = rstest.fn();
       loadFromFs('/path/to/file.js', callback);
 
       expect(require('fs').existsSync).toHaveBeenCalledWith('/path/to/file.js');
@@ -263,7 +264,7 @@ describe('runtimePlugin', () => {
       require('fs').existsSync.mockReturnValue(true);
 
       // Mock the Script constructor and runInThisContext to return a function
-      const mockRunInThisContext = jest
+      const mockRunInThisContext = rstest
         .fn()
         .mockReturnValue(
           (exports: any, require: any, dirname: string, filename: string) => {
@@ -287,7 +288,7 @@ describe('runtimePlugin', () => {
         },
       );
 
-      const callback = jest.fn();
+      const callback = rstest.fn();
       loadFromFs('/path/to/file.js', callback);
 
       expect(require('fs').readFile).toHaveBeenCalledWith(
@@ -313,7 +314,7 @@ describe('runtimePlugin', () => {
         },
       );
 
-      const callback = jest.fn();
+      const callback = rstest.fn();
       loadFromFs('/path/to/file.js', callback);
 
       expect(callback).toHaveBeenCalledWith(readError, null);
@@ -337,7 +338,7 @@ describe('runtimePlugin', () => {
         throw evalError;
       });
 
-      const callback = jest.fn();
+      const callback = rstest.fn();
       loadFromFs('/path/to/file.js', callback);
 
       expect(callback).toHaveBeenCalledWith(evalError, null);
@@ -346,12 +347,12 @@ describe('runtimePlugin', () => {
 
   describe('fetchAndRun', () => {
     beforeEach(() => {
-      (global.fetch as jest.Mock).mockReset();
+      (global.fetch as Mock).mockReset();
     });
 
     it('should fetch and execute remote content', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        text: jest.fn().mockResolvedValue('// mock script content'),
+      (global.fetch as Mock).mockResolvedValue({
+        text: rstest.fn().mockResolvedValue('// mock script content'),
       });
 
       const url = Object.assign(new URL('http://example.com/chunk.js'), {
@@ -361,7 +362,7 @@ describe('runtimePlugin', () => {
           publicPath: 'http://localhost:3000/',
         },
       });
-      const callback = jest.fn();
+      const callback = rstest.fn();
       const args = {
         origin: {
           options: {
@@ -370,8 +371,8 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue({
-                  text: jest.fn().mockResolvedValue('// mock script content'),
+                emit: rstest.fn().mockResolvedValue({
+                  text: rstest.fn().mockResolvedValue('// mock script content'),
                 }),
               },
             },
@@ -393,7 +394,7 @@ describe('runtimePlugin', () => {
 
     it('should handle fetch errors', async () => {
       const fetchError = new Error('Fetch failed');
-      (global.fetch as jest.Mock).mockRejectedValue(fetchError);
+      (global.fetch as Mock).mockRejectedValue(fetchError);
 
       const url = Object.assign(new URL('http://example.com/chunk.js'), {
         mfMetadata: {
@@ -402,7 +403,7 @@ describe('runtimePlugin', () => {
           publicPath: 'http://localhost:3000/',
         },
       });
-      const callback = jest.fn();
+      const callback = rstest.fn();
       const args = {
         origin: {
           options: {
@@ -411,7 +412,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockRejectedValue(fetchError),
+                emit: rstest.fn().mockRejectedValue(fetchError),
               },
             },
           },
@@ -428,8 +429,8 @@ describe('runtimePlugin', () => {
 
     it('should attach remote chunk context when execution fails', async () => {
       const syntaxError = new SyntaxError('Unexpected token :');
-      (global.fetch as jest.Mock).mockResolvedValue({
-        text: jest.fn().mockResolvedValue('const broken = { foo: };'),
+      (global.fetch as Mock).mockResolvedValue({
+        text: rstest.fn().mockResolvedValue('const broken = { foo: };'),
       });
       require('vm').Script.mockImplementationOnce(() => {
         throw syntaxError;
@@ -442,7 +443,7 @@ describe('runtimePlugin', () => {
           publicPath: 'http://localhost:3000/',
         },
       });
-      const callback = jest.fn();
+      const callback = rstest.fn();
       const args = {
         origin: {
           options: {
@@ -451,8 +452,8 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue({
-                  text: jest.fn().mockResolvedValue('const broken = { foo: };'),
+                emit: rstest.fn().mockResolvedValue({
+                  text: rstest.fn().mockResolvedValue('const broken = { foo: };'),
                 }),
               },
             },
@@ -510,7 +511,7 @@ describe('runtimePlugin', () => {
       // Make URL constructor throw for direct resolution
       const originalURL = global.URL;
       let firstCall = true;
-      global.URL = jest
+      global.URL = rstest
         .fn()
         .mockImplementation((...args: [string, string?]) => {
           if (firstCall) {
@@ -532,7 +533,7 @@ describe('runtimePlugin', () => {
       // Mock URL constructor to throw on first call to trigger fallback path
       const originalURL = global.URL;
       let firstCall = true;
-      global.URL = jest
+      global.URL = rstest
         .fn()
         .mockImplementation((...args: [string, string?]) => {
           if (firstCall) {
@@ -544,7 +545,7 @@ describe('runtimePlugin', () => {
 
       // Mock a complex remote entry URL with a path
       const mockEntryUrl = 'http://example.com/static/js/remoteEntry.js';
-      jest
+      rstest
         .spyOn(runtimePluginModule, 'returnFromCache')
         .mockReturnValue(mockEntryUrl);
 
@@ -565,15 +566,15 @@ describe('runtimePlugin', () => {
     it('should return null when URL cannot be resolved', () => {
       // Make URL constructor throw
       const originalURL = global.URL;
-      global.URL = jest.fn().mockImplementation(() => {
+      global.URL = rstest.fn().mockImplementation(() => {
         throw new Error('Invalid URL');
       }) as any;
 
       // Mock returnFromCache and returnFromGlobalInstances to return null
-      const spyReturnFromCache = jest
+      const spyReturnFromCache = rstest
         .spyOn(runtimePluginModule, 'returnFromCache')
         .mockReturnValue(null);
-      const spyReturnFromGlobalInstances = jest
+      const spyReturnFromGlobalInstances = rstest
         .spyOn(runtimePluginModule, 'returnFromGlobalInstances')
         .mockReturnValue(null);
 
@@ -590,7 +591,7 @@ describe('runtimePlugin', () => {
     it('should attach fallback resolution metadata to resolved urls', () => {
       const originalURL = global.URL;
       let firstCall = true;
-      global.URL = jest
+      global.URL = rstest
         .fn()
         .mockImplementation((...args: [string, string?]) => {
           if (firstCall) {
@@ -620,20 +621,20 @@ describe('runtimePlugin', () => {
 
   describe('loadChunk', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      rstest.clearAllMocks();
     });
 
     it('should load a chunk from the filesystem', () => {
       // Create a spy that will resolve successfully
-      const mockCallback = jest.fn();
+      const mockCallback = rstest.fn();
       const mockChunk = {
         modules: { 'test-module': {} },
         ids: ['test-chunk'],
-        runtime: jest.fn(),
+        runtime: rstest.fn(),
       };
 
       // Create a manual spy for loadFromFs that calls the callback with a successful result
-      jest
+      rstest
         .spyOn(runtimePluginModule, 'loadFromFs')
         .mockImplementation((path, callback) => callback(null, mockChunk));
 
@@ -648,14 +649,14 @@ describe('runtimePlugin', () => {
     });
 
     it('should fetch a chunk from a URL', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = rstest.fn();
       const mockChunk = {
         modules: { 'test-module': {} },
         ids: ['test-chunk'],
-        runtime: jest.fn(),
+        runtime: rstest.fn(),
       };
 
-      const mockFetchAndRun = jest
+      const mockFetchAndRun = rstest
         .spyOn(runtimePluginModule, 'fetchAndRun')
         .mockImplementation((url, chunkId, callback, args) =>
           callback(null, mockChunk),
@@ -663,7 +664,7 @@ describe('runtimePlugin', () => {
 
       // Create a proper URL object
       const testUrl = new URL('http://example.com/chunk.js');
-      const resolveUrlSpy = jest
+      const resolveUrlSpy = rstest
         .spyOn(runtimePluginModule, 'resolveUrl')
         .mockReturnValue(testUrl);
 
@@ -685,10 +686,10 @@ describe('runtimePlugin', () => {
     });
 
     it('should handle unknown strategies', () => {
-      const mockCallback = jest.fn();
+      const mockCallback = rstest.fn();
 
       // Mock resolveUrl to return a URL to ensure we test the strategy branch
-      jest.spyOn(runtimePluginModule, 'resolveUrl').mockReturnValue(null);
+      rstest.spyOn(runtimePluginModule, 'resolveUrl').mockReturnValue(null);
 
       // The strategy 'unknown' isn't in the implementation, so it will default to the URL path
       // which requires resolveUrl to work, which we've mocked to return null
@@ -706,11 +707,11 @@ describe('runtimePlugin', () => {
   describe('installChunk', () => {
     it('should install modules and runtime from chunk', () => {
       // Setup resolver function
-      const resolver = jest.fn();
+      const resolver = rstest.fn();
 
       const installedChunks: Record<string, any> = {
-        chunk1: [resolver, jest.fn()], // Properly structured chunk with resolver function at index 0
-        chunk2: [resolver, jest.fn()],
+        chunk1: [resolver, rstest.fn()], // Properly structured chunk with resolver function at index 0
+        chunk2: [resolver, rstest.fn()],
       };
 
       const chunk = {
@@ -718,7 +719,7 @@ describe('runtimePlugin', () => {
           module1: { id: 'module1' },
           module2: { id: 'module2' },
         },
-        runtime: jest.fn(),
+        runtime: rstest.fn(),
         ids: ['chunk1', 'chunk2'],
       };
 
@@ -744,14 +745,14 @@ describe('runtimePlugin', () => {
     });
 
     it('should call resolver for installed chunk data', () => {
-      const resolver = jest.fn();
+      const resolver = rstest.fn();
       const installedChunks = {
-        chunk1: [resolver, jest.fn()],
+        chunk1: [resolver, rstest.fn()],
       };
 
       const chunk = {
         modules: {},
-        runtime: jest.fn(),
+        runtime: rstest.fn(),
         ids: ['chunk1'],
       };
 
@@ -772,7 +773,7 @@ describe('runtimePlugin', () => {
       expect((global as any).__webpack_require__.l).not.toBe(originalL);
 
       // Test the loader
-      const doneMock = jest.fn();
+      const doneMock = rstest.fn();
       (global as any).__webpack_require__.l(
         'http://localhost:3001/remoteEntry.js',
         doneMock,
@@ -793,7 +794,7 @@ describe('runtimePlugin', () => {
       expect(() => {
         (global as any).__webpack_require__.l(
           'http://localhost:3001/remoteEntry.js',
-          jest.fn(),
+          rstest.fn(),
           '',
           '',
         );
@@ -803,15 +804,15 @@ describe('runtimePlugin', () => {
 
   describe('setupChunkHandler', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      rstest.clearAllMocks();
       // Set up webpack_require properties needed for the test
       (global as any).__webpack_require__ = {
         ...mockWebpackRequire,
         federation: {
-          chunkMatcher: jest.fn().mockReturnValue(true),
+          chunkMatcher: rstest.fn().mockReturnValue(true),
           rootOutputDir: '/dist',
         },
-        u: jest.fn().mockReturnValue('chunk.js'),
+        u: rstest.fn().mockReturnValue('chunk.js'),
         f: {
           require: undefined,
           readFileVm: undefined,
@@ -824,16 +825,16 @@ describe('runtimePlugin', () => {
       const mockChunk = {
         modules: { 'test-module': {} },
         ids: ['test-chunk'],
-        runtime: jest.fn(),
+        runtime: rstest.fn(),
       };
 
-      jest
+      rstest
         .spyOn(runtimePluginModule, 'loadChunk')
         .mockImplementation((strategy, chunkId, root, callback, args) => {
           callback(null, mockChunk);
         });
 
-      jest
+      rstest
         .spyOn(runtimePluginModule, 'installChunk')
         .mockImplementation((chunk, installedChunks) => {
           // Mock implementation that doesn't rely on iterating chunk.ids
@@ -876,21 +877,21 @@ describe('runtimePlugin', () => {
 
   describe('setupWebpackRequirePatching', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      rstest.clearAllMocks();
       // Reset webpack require to ensure f exists with require already defined
       (global as any).__webpack_require__ = {
         ...mockWebpackRequire,
         f: {
-          require: jest.fn(), // This needs to exist for the function to patch it
-          readFileVm: jest.fn(), // This needs to exist for the function to patch it
+          require: rstest.fn(), // This needs to exist for the function to patch it
+          readFileVm: rstest.fn(), // This needs to exist for the function to patch it
         },
       };
       // Mock console.warn for testing
-      console.warn = jest.fn();
+      console.warn = rstest.fn();
     });
 
     it('should patch webpack_require.f.require and readFileVm when they exist', () => {
-      const handle = jest.fn();
+      const handle = rstest.fn();
 
       setupWebpackRequirePatching(handle);
 
@@ -900,7 +901,7 @@ describe('runtimePlugin', () => {
     });
 
     it('should display a warning when patching require', () => {
-      const handle = jest.fn();
+      const handle = rstest.fn();
 
       setupWebpackRequirePatching(handle);
 
@@ -925,17 +926,17 @@ describe('runtimePlugin', () => {
 
   describe('beforeInit hook', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      rstest.clearAllMocks();
       // Reset webpack require to ensure clean state
       (global as any).__webpack_require__ = {
         ...mockWebpackRequire,
         federation: {
           ...mockWebpackRequire.federation,
           runtime: {
-            loadScriptNode: jest.fn().mockResolvedValue({}),
+            loadScriptNode: rstest.fn().mockResolvedValue({}),
           },
           instance: {
-            initRawContainer: jest.fn().mockReturnValue({}),
+            initRawContainer: rstest.fn().mockReturnValue({}),
           },
         },
         f: {
@@ -951,7 +952,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -967,8 +968,8 @@ describe('runtimePlugin', () => {
     it('should patch webpack chunk loading handlers', () => {
       // Make sure __webpack_require__.f is initialized with require and readFileVm
       (global as any).__webpack_require__.f = {
-        require: jest.fn(),
-        readFileVm: jest.fn(),
+        require: rstest.fn(),
+        readFileVm: rstest.fn(),
       };
 
       const mockArgs = {
@@ -976,7 +977,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -1008,15 +1009,15 @@ describe('runtimePlugin', () => {
         federation: {
           ...mockWebpackRequire.federation,
           runtime: {
-            loadScriptNode: jest.fn().mockResolvedValue({}),
+            loadScriptNode: rstest.fn().mockResolvedValue({}),
           },
           instance: {
-            initRawContainer: jest.fn().mockReturnValue({}),
+            initRawContainer: rstest.fn().mockReturnValue({}),
           },
         },
         f: {
-          require: jest.fn(),
-          readFileVm: jest.fn(),
+          require: rstest.fn(),
+          readFileVm: rstest.fn(),
         },
       };
 
@@ -1025,7 +1026,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -1038,7 +1039,7 @@ describe('runtimePlugin', () => {
     });
 
     it('should handle loading remote script via webpack_require.l', async () => {
-      const doneMock = jest.fn();
+      const doneMock = rstest.fn();
       (global as any).__webpack_require__.l(
         'http://localhost:3001/remoteEntry.js',
         doneMock,
@@ -1078,9 +1079,9 @@ describe('runtimePlugin', () => {
     it('should handle errors in loadScriptNode', async () => {
       // Mock loadScriptNode to reject with an error
       (global as any).__webpack_require__.federation.runtime.loadScriptNode =
-        jest.fn().mockRejectedValue(new Error('Loading error'));
+        rstest.fn().mockRejectedValue(new Error('Loading error'));
 
-      const doneMock = jest.fn();
+      const doneMock = rstest.fn();
 
       // First set up the loader using the setupScriptLoader function
       setupScriptLoader();
@@ -1108,7 +1109,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -1146,15 +1147,15 @@ describe('runtimePlugin', () => {
         federation: {
           ...mockWebpackRequire.federation,
           runtime: {
-            loadScriptNode: jest.fn().mockResolvedValue({}),
+            loadScriptNode: rstest.fn().mockResolvedValue({}),
           },
           instance: {
-            initRawContainer: jest.fn().mockReturnValue({}),
+            initRawContainer: rstest.fn().mockReturnValue({}),
           },
         },
         f: {
-          require: jest.fn(),
-          readFileVm: jest.fn(),
+          require: rstest.fn(),
+          readFileVm: rstest.fn(),
         },
       };
 
@@ -1163,7 +1164,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -1202,14 +1203,14 @@ describe('runtimePlugin', () => {
 
     beforeEach(() => {
       originalConsoleLog = console.log;
-      console.log = jest.fn();
+      console.log = rstest.fn();
 
       const mockArgs = {
         origin: {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -1230,7 +1231,7 @@ describe('runtimePlugin', () => {
       (global as any).__webpack_require__.p = 'http://example.com/assets/';
 
       const originalExistsSync = require('fs').existsSync;
-      require('fs').existsSync = jest.fn().mockReturnValue(true);
+      require('fs').existsSync = rstest.fn().mockReturnValue(true);
 
       const promises: Promise<any>[] = [];
       (global as any).__webpack_require__.f.require('testChunk', promises);
@@ -1250,15 +1251,15 @@ describe('runtimePlugin', () => {
         federation: {
           ...mockWebpackRequire.federation,
           runtime: {
-            loadScriptNode: jest.fn().mockResolvedValue({}),
+            loadScriptNode: rstest.fn().mockResolvedValue({}),
           },
           instance: {
-            initRawContainer: jest.fn().mockReturnValue({}),
+            initRawContainer: rstest.fn().mockReturnValue({}),
           },
         },
         f: {
-          require: jest.fn(),
-          readFileVm: jest.fn(),
+          require: rstest.fn(),
+          readFileVm: rstest.fn(),
         },
       };
 
@@ -1267,7 +1268,7 @@ describe('runtimePlugin', () => {
           loaderHook: {
             lifecycle: {
               fetch: {
-                emit: jest.fn().mockResolvedValue(null),
+                emit: rstest.fn().mockResolvedValue(null),
               },
             },
           },
@@ -1280,11 +1281,11 @@ describe('runtimePlugin', () => {
     });
 
     it('should load remote entries correctly', () => {
-      const loadScriptNodeMock = jest.fn().mockResolvedValue({});
+      const loadScriptNodeMock = rstest.fn().mockResolvedValue({});
       (global as any).__webpack_require__.federation.runtime.loadScriptNode =
         loadScriptNodeMock;
 
-      const doneMock = jest.fn();
+      const doneMock = rstest.fn();
       (global as any).__webpack_require__.l(
         'http://localhost:3001/remoteEntry.js',
         doneMock,

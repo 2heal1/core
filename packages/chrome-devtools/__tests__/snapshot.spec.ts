@@ -1,5 +1,3 @@
-import { expect, describe, it } from 'vitest';
-
 import { getModuleInfo } from '../src/utils';
 
 describe('basic proxy core bridge', () => {

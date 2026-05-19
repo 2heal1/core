@@ -1,6 +1,6 @@
 // Mock the dependencies
-jest.mock('../src/attachShareScopeMap', () => ({
-  attachShareScopeMap: jest.fn(),
+rstest.mock('../src/attachShareScopeMap', () => ({
+  attachShareScopeMap: rstest.fn(),
 }));
 
 // Import the actual implementation
@@ -11,7 +11,7 @@ import type { ConsumesOptions } from '../src/types';
 describe('consumes', () => {
   // Reset mocks before each test
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   test('should call attachShareScopeMap with webpack require', () => {
@@ -24,7 +24,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {},
       webpackRequire: {
         federation: {},
-        o: jest.fn().mockReturnValue(false),
+        o: rstest.fn().mockReturnValue(false),
       } as any,
     };
 
@@ -50,7 +50,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {},
       webpackRequire: {
         federation: {},
-        o: jest
+        o: rstest
           .fn()
           .mockImplementation((obj, key) =>
             Object.prototype.hasOwnProperty.call(obj, key),
@@ -86,7 +86,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {},
       webpackRequire: {
         federation: {},
-        o: jest
+        o: rstest
           .fn()
           .mockImplementation((obj, key) =>
             Object.prototype.hasOwnProperty.call(obj, key),
@@ -117,15 +117,15 @@ describe('consumes', () => {
       },
     };
 
-    const mockFactory = jest.fn().mockReturnValue('factory result');
+    const mockFactory = rstest.fn().mockReturnValue('factory result');
     const mockLoadSharePromise = Promise.resolve(mockFactory);
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockLoadSharePromise),
+      loadShare: rstest.fn().mockReturnValue(mockLoadSharePromise),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -147,7 +147,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: mockShareKey,
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: mockShareInfo,
         },
       },
@@ -178,7 +178,7 @@ describe('consumes', () => {
     const mockModuleId = 'moduleId1';
     const mockPromises: Promise<any>[] = [];
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -201,7 +201,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: 'testShareKey',
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: {
             scope: ['default'],
             shareConfig: {
@@ -235,17 +235,17 @@ describe('consumes', () => {
     const mockShareKey = 'testShareKey';
     // The getter should return a factory function
     const mockGetterFactory = () => 'getter result';
-    const mockGetter = jest.fn().mockReturnValue(mockGetterFactory);
+    const mockGetter = rstest.fn().mockReturnValue(mockGetterFactory);
 
     // Create a real promise that resolves to false
     const mockLoadSharePromise = Promise.resolve(false);
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockLoadSharePromise),
+      loadShare: rstest.fn().mockReturnValue(mockLoadSharePromise),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -318,11 +318,11 @@ describe('consumes', () => {
     };
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockThenable),
+      loadShare: rstest.fn().mockReturnValue(mockThenable),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -344,7 +344,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: mockShareKey,
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: {
             scope: ['default'],
             shareConfig: {
@@ -385,15 +385,15 @@ describe('consumes', () => {
       },
     };
 
-    const mockFactory = jest.fn().mockReturnValue('factory result');
+    const mockFactory = rstest.fn().mockReturnValue('factory result');
     const mockLoadSharePromise = Promise.resolve(mockFactory);
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockLoadSharePromise),
+      loadShare: rstest.fn().mockReturnValue(mockLoadSharePromise),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -415,7 +415,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: mockShareKey,
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: mockShareInfo,
         },
       },
@@ -459,15 +459,15 @@ describe('consumes', () => {
       },
     };
 
-    const mockFactory = jest.fn().mockReturnValue('factory result');
+    const mockFactory = rstest.fn().mockReturnValue('factory result');
     const mockLoadSharePromise = Promise.resolve(mockFactory);
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockLoadSharePromise),
+      loadShare: rstest.fn().mockReturnValue(mockLoadSharePromise),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -489,7 +489,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: mockShareKey,
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: mockShareInfo,
         },
       },
@@ -527,15 +527,15 @@ describe('consumes', () => {
       },
     };
 
-    const mockFactory = jest.fn().mockReturnValue('factory result');
+    const mockFactory = rstest.fn().mockReturnValue('factory result');
     const mockLoadSharePromise = Promise.resolve(mockFactory);
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockLoadSharePromise),
+      loadShare: rstest.fn().mockReturnValue(mockLoadSharePromise),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -557,7 +557,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: mockShareKey,
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: mockShareInfo,
         },
       },
@@ -592,11 +592,11 @@ describe('consumes', () => {
     const mockLoadSharePromise = Promise.reject(mockError);
 
     const mockFederationInstance = {
-      loadShare: jest.fn().mockReturnValue(mockLoadSharePromise),
+      loadShare: rstest.fn().mockReturnValue(mockLoadSharePromise),
     };
 
     const mockWebpackRequire = {
-      o: jest
+      o: rstest
         .fn()
         .mockImplementation((obj, key) =>
           Object.prototype.hasOwnProperty.call(obj, key),
@@ -618,7 +618,7 @@ describe('consumes', () => {
       moduleToHandlerMapping: {
         [mockModuleId]: {
           shareKey: mockShareKey,
-          getter: jest.fn(),
+          getter: rstest.fn(),
           shareInfo: {
             scope: ['default'],
             shareConfig: {

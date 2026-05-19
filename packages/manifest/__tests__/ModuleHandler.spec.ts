@@ -1,6 +1,6 @@
 import type { StatsModule } from 'webpack';
 
-jest.mock(
+rstest.mock(
   '@module-federation/sdk',
   () => ({
     composeKeyWithSeparator: (...parts: string[]) => parts.join(':'),
@@ -15,7 +15,7 @@ jest.mock(
   { virtual: true },
 );
 
-jest.mock(
+rstest.mock(
   '@module-federation/dts-plugin/core',
   () => ({
     isTSProject: () => false,
@@ -24,7 +24,7 @@ jest.mock(
   { virtual: true },
 );
 
-jest.mock(
+rstest.mock(
   '@module-federation/managers',
   () => ({
     ContainerManager: class {

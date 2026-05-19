@@ -1,7 +1,7 @@
 // Mock the actual implementation of installInitialConsumes
-jest.mock('../src/installInitialConsumes', () => {
+rstest.mock('../src/installInitialConsumes', () => {
   return {
-    installInitialConsumes: jest.fn((options) => {
+    installInitialConsumes: rstest.fn((options) => {
       const {
         moduleToHandlerMapping,
         webpackRequire,
@@ -50,7 +50,7 @@ import type { InstallInitialConsumesOptions } from '../src/types';
 
 describe('installInitialConsumes', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    rstest.clearAllMocks();
   });
 
   test('should set up module factory functions for each initial consume', () => {
@@ -61,14 +61,14 @@ describe('installInitialConsumes', () => {
     const mockShareKey2 = 'shareKey2';
 
     const mockFactory1Result = { factoryResult: 'result1' };
-    const mockFactory1 = jest.fn(() => mockFactory1Result);
+    const mockFactory1 = rstest.fn(() => mockFactory1Result);
 
     const mockFactory2Result = { factoryResult: 'result2' };
-    const mockFactory2 = jest.fn(() => mockFactory2Result);
+    const mockFactory2 = rstest.fn(() => mockFactory2Result);
 
     // Mock federation instance
     const mockFederationInstance = {
-      loadShareSync: jest
+      loadShareSync: rstest
         .fn()
         .mockImplementationOnce(() => mockFactory1)
         .mockImplementationOnce(() => mockFactory2),
@@ -152,7 +152,7 @@ describe('installInitialConsumes', () => {
 
     // Mock federation instance that returns non-function
     const mockFederationInstance = {
-      loadShareSync: jest.fn().mockReturnValue('not-a-function'),
+      loadShareSync: rstest.fn().mockReturnValue('not-a-function'),
     };
 
     // Create mock webpackRequire

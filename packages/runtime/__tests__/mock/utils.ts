@@ -1,5 +1,5 @@
 import createFetchMock from 'vitest-fetch-mock';
-import { vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import path from 'path';
 import fs from 'fs';
 
@@ -13,7 +13,7 @@ function isAbsolute(url: string) {
   return false;
 }
 
-const fetchMocker = createFetchMock(vi);
+const fetchMocker = createFetchMock(rstest);
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function mockStaticServer({

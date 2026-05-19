@@ -1,5 +1,4 @@
 import { join, resolve } from 'path';
-import { describe, expect, it } from 'vitest';
 
 import { retrieveRemoteConfig } from './remotePlugin';
 

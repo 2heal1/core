@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 
 import {
   __EAGER_SHARE__,
@@ -67,7 +67,7 @@ const stubUmdRequest = ({
     }
   }
 
-  vi.stubGlobal('XMLHttpRequest', MockXMLHttpRequest as typeof XMLHttpRequest);
+  rstest.stubGlobal('XMLHttpRequest', MockXMLHttpRequest as typeof XMLHttpRequest);
 };
 
 const getPlugin = async () => {
@@ -77,8 +77,8 @@ const getPlugin = async () => {
 
 describe('fast refresh shared scope globals', () => {
   beforeEach(() => {
-    vi.resetModules();
-    vi.unstubAllGlobals();
+    rstest.resetModules();
+    rstest.unstubAllGlobals();
     resetWindowState();
   });
 

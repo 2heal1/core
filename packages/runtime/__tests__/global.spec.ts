@@ -1,10 +1,10 @@
-import { expectTypeOf, describe, it, vi, expect } from 'vitest';
+import { expectTypeOf, rstest } from '@rstest/core';
 import { init, loadRemote, loadShare, loadShareSync } from '../src/index';
 import { getInfoWithoutType } from '@module-federation/runtime-core';
 
 describe('global', () => {
   it('inject mode', () => {
-    globalThis.__FEDERATION__.__DEBUG_CONSTRUCTOR__ = vi.fn();
+    globalThis.__FEDERATION__.__DEBUG_CONSTRUCTOR__ = rstest.fn();
     const injectArgs = {
       name: '@federation/inject-mode',
       remotes: [],

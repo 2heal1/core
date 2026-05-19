@@ -13,15 +13,7 @@ import {
 } from 'fs';
 import os from 'os';
 import { join } from 'path';
-import {
-  afterAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-  MockInstance,
-} from 'vitest';
+import { rstest, MockInstance } from '@rstest/core';
 
 import {
   createTypesArchive,
@@ -46,7 +38,7 @@ describe('archiveHandler', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    rstest.clearAllMocks();
     // Clean up and recreate the output directory
     rmSync(tsConfig.compilerOptions.outDir, { recursive: true, force: true });
     mkdirSync(tsConfig.compilerOptions.outDir, { recursive: true });
@@ -322,7 +314,7 @@ describe('archiveHandler', () => {
       const zip = new AdmZip();
       // Add an empty directory to the archive
       zip.addFile('.keep', Buffer.from(''));
-      vi.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
+      rstest.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
         data: zip.toBuffer(),
         status: 200,
         headers: {},
@@ -344,7 +336,7 @@ describe('archiveHandler', () => {
 
       const zip = new AdmZip();
       zip.addFile('new.d.ts', Buffer.from('new content'));
-      vi.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
+      rstest.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
         data: zip.toBuffer(),
         status: 200,
         headers: {},
@@ -369,7 +361,7 @@ describe('archiveHandler', () => {
 
       const zip = new AdmZip();
       zip.addFile('new.d.ts', Buffer.from('new content'));
-      vi.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
+      rstest.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
         data: zip.toBuffer(),
         status: 200,
         headers: {},
@@ -400,7 +392,7 @@ describe('archiveHandler', () => {
     });
 
     it('should handle malformed zip data', async () => {
-      vi.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
+      rstest.spyOn(utils, 'nativeFetch').mockResolvedValueOnce({
         data: Buffer.from('not a valid zip file'),
         status: 200,
         headers: {},

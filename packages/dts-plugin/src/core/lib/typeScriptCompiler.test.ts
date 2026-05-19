@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import { join, resolve, sep } from 'path';
 import util from 'util';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { rstest } from '@rstest/core';
 import type { TsConfigJson } from '../interfaces/TsConfigJson';
 
 import { RemoteOptions } from '../interfaces/RemoteOptions';
@@ -95,7 +95,7 @@ describe('typeScriptCompiler', () => {
     };
 
     afterEach(() => {
-      vi.restoreAllMocks();
+      rstest.restoreAllMocks();
       rmSync(tmpDir, { recursive: true, force: true });
       mkdirSync(join(tmpDir, 'typesRemoteFolder'), { recursive: true });
     });
@@ -124,8 +124,8 @@ describe('typeScriptCompiler', () => {
     });
 
     it('use shell option on windows when invoking compiler', async () => {
-      const execPromise = vi.fn().mockResolvedValue({});
-      vi.spyOn(util, 'promisify').mockReturnValue(
+      const execPromise = rstest.fn().mockResolvedValue({});
+      rstest.spyOn(util, 'promisify').mockReturnValue(
         execPromise as unknown as ReturnType<typeof util.promisify>,
       );
       const restorePlatform = withProcessPlatform('win32');
@@ -152,8 +152,8 @@ describe('typeScriptCompiler', () => {
     });
 
     it('disable shell option on non-windows platforms', async () => {
-      const execPromise = vi.fn().mockResolvedValue({});
-      vi.spyOn(util, 'promisify').mockReturnValue(
+      const execPromise = rstest.fn().mockResolvedValue({});
+      rstest.spyOn(util, 'promisify').mockReturnValue(
         execPromise as unknown as ReturnType<typeof util.promisify>,
       );
       const restorePlatform = withProcessPlatform('linux');
@@ -180,8 +180,8 @@ describe('typeScriptCompiler', () => {
     });
 
     it('splits compilerInstance arguments for execFile', async () => {
-      const execPromise = vi.fn().mockResolvedValue({});
-      vi.spyOn(util, 'promisify').mockReturnValue(
+      const execPromise = rstest.fn().mockResolvedValue({});
+      rstest.spyOn(util, 'promisify').mockReturnValue(
         execPromise as unknown as ReturnType<typeof util.promisify>,
       );
       const restorePlatform = withProcessPlatform('linux');

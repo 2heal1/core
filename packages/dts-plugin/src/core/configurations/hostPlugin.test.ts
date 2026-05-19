@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import path from 'path';
 
 import { retrieveHostConfig } from './hostPlugin';

@@ -1,5 +1,3 @@
-import { describe, expect, it } from 'vitest';
-
 import { sanitizePostMessagePayload } from '../src/utils/chrome/safe-post-message';
 
 describe('sanitizePostMessagePayload', () => {

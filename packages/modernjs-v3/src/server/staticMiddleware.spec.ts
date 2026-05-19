@@ -1,14 +1,14 @@
-import { it, expect, describe, vi, beforeEach } from 'vitest';
+import { rstest } from '@rstest/core';
 import { createStaticMiddleware } from './staticMiddleware';
 
 // Mock dependencies
-vi.mock('fs/promises', () => ({
-  access: vi.fn(),
+rstest.mock('fs/promises', () => ({
+  access: rstest.fn(),
 }));
 
-vi.mock('./fileCache', () => ({
+rstest.mock('./fileCache', () => ({
   fileCache: {
-    getFile: vi.fn(),
+    getFile: rstest.fn(),
   },
 }));
 
@@ -22,7 +22,7 @@ describe('staticMiddleware', () => {
 
   beforeEach(() => {
     // Reset all mocks
-    vi.clearAllMocks();
+    rstest.clearAllMocks();
 
     // Create middleware instance
     middleware = createStaticMiddleware({
@@ -31,13 +31,13 @@ describe('staticMiddleware', () => {
     });
 
     // Setup mock context
-    nextSpy = vi.fn();
+    nextSpy = rstest.fn();
     mockContext = {
       req: {
         path: '',
       },
-      header: vi.fn(),
-      body: vi.fn(),
+      header: rstest.fn(),
+      body: rstest.fn(),
     };
   });
 

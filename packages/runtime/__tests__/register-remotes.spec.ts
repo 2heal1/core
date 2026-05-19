@@ -1,4 +1,4 @@
-import { assert, describe, it, expect } from 'vitest';
+
 import { ModuleFederation } from '../src/index';
 
 describe('ModuleFederation', () => {

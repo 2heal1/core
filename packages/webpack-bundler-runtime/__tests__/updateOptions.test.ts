@@ -109,7 +109,7 @@ describe('updateOptions', () => {
 
     // 新增测试：initializeSharingData 处理
     it('should handle initializeSharingData', () => {
-      const mockRegisterShared = jest.fn();
+      const mockRegisterShared = rstest.fn();
       const mockWebpackRequire = {
         consumesLoadingData: {},
         initializeSharingData: {
@@ -159,7 +159,7 @@ describe('updateOptions', () => {
 
     // 新增测试：initializeSharingData 跳过已更新
     it('should skip initializeSharingData when _updated flag is set', () => {
-      const mockRegisterShared = jest.fn();
+      const mockRegisterShared = rstest.fn();
       const mockWebpackRequire = {
         initializeSharingData: {
           _updated: 1,

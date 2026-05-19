@@ -123,7 +123,7 @@ describe('bridge', () => {
   });
 
   it('createRemoteAppComponent with custom createRoot prop', async () => {
-    const renderMock = jest.fn();
+    const renderMock = rstest.fn();
 
     function Component({ props }: { props?: Record<string, any> }) {
       return <div>life cycle render {props?.msg}</div>;
@@ -133,7 +133,7 @@ describe('bridge', () => {
       createRoot: () => {
         return {
           render: renderMock,
-          unmount: jest.fn(),
+          unmount: rstest.fn(),
         };
       },
     });

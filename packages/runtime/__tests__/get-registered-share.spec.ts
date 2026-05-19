@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+
 import { assert, getRegisteredShare } from '@module-federation/runtime-core';
 
 describe('get expected shared', () => {

@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { isMFFormat } from '../../src/cli';
 import type { Rspack } from '@rsbuild/core';
 

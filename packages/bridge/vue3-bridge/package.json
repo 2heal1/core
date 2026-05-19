@@ -24,7 +24,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "rstest run"
   },
   "peerDependencies": {
     "vue": "=3",

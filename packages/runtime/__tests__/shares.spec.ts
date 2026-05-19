@@ -1,4 +1,4 @@
-import { assert, describe, it } from 'vitest';
+
 import { init } from '../src/index';
 import {
   mergeShareInfo1,
